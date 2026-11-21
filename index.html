@@ -659,6 +659,14 @@ function vTestCards(){
   <button class="testcard" data-a="opentest" data-v="perso"><b class="goldtx">Quelle Miss es-tu ?</b><span>10 questions façon magazine${me?` · ta Miss : Miss ${me.region}`:""}</span></button>
   <button class="testcard" data-a="opentest" data-v="culture"><b class="goldtx">Le test de culture G des Miss</b><span>Mini test de 20 minutes ou test complet${P.quiz_total?` · ta note : ${String(qNote(P.quiz_score,P.quiz_total)).replace(".",",")}/20`:""}</span></button>`;
 }
+function vFranceFull(n,title){
+  const f=frRef(n); if(!f||!f.length) return "";
+  const k=MANCHES[n].k, mine=roundOf(P,n), row=(id,i)=>`<div class="rk ${i<3?"p"+(i+1):""}"><div class="pos">${i+1}</div><div class="grow"><b>Miss ${BY[id].region}</b><div class="det">${BY[id].name}</div></div>${(n===3?mine[i]===id:mine.slice(0,k).includes(id)&&i<k)?`<span class="mk">comme toi</span>`:""}</div>`;
+  const head=f.slice(0,k).map(row).join(""), rest=f.slice(k).map((id,j)=>row(id,j+k)).join("");
+  return `<div class="box"><h3>${title||`Le classement de la France · manche ${n}`}</h3>${head}
+    ${rest?`<details style="margin-top:8px"><summary style="font-size:16px">Voir les ${f.length-k} suivantes</summary>${rest}</details>`:""}
+    <div class="det" style="margin-top:8px">D'après ${FR[n].voters} classement${FR[n].voters>1?"s":""}.</div></div>`;
+}
 function vJouer(){
   const n=Math.min(R.manche,3), M=MANCHES[n];
   const hi=P?`Bonsoir ${esc(P.name)}`:"";
@@ -680,12 +688,11 @@ function vJouer(){
   }else{
     const f=frRef(n), mine=order.slice(0,M.k);
     html+=`<h2>Manche ${n} fermée</h2><div class="sub">Plus de changement possible. ${resultReady(n)?"":"Le résultat officiel arrive…"}</div>`;
-    if(f&&f.length) html+=`<div class="box"><h3>Le ${n===3?"classement":"top "+M.k} de la France est révélé</h3>
-      ${f.slice(0,M.k).map((id,i)=>`<div class="rk p${i+1}"><div class="pos">${i+1}</div><div class="grow"><b>Miss ${BY[id].region}</b><div class="det">${BY[id].name}</div></div>${(n===3?order[i]===id:mine.includes(id))?`<span class="mk">comme toi</span>`:""}</div>`).join("")}
-      <div class="det" style="margin-top:8px">D'après ${FR[n].voters} classement${FR[n].voters>1?"s":""}.</div></div>`;
+    if(f&&f.length) html+=vFranceFull(n,`Le classement de la France est révélé`);
     html+=`<div class="box"><h3>Ton ${n===3?"classement":"top "+M.k}</h3>${mine.map((id,i)=>`<div class="rk"><div class="pos">${i+1}</div><div class="grow"><b>Miss ${BY[id].region}</b></div>${tvRef(n).includes(id)&&resultReady(n)&&(n<3||R.ord[i]===id)?`<span class="mk">validée par la télé</span>`:""}</div>`).join("")}</div>`;
   }
   html+=`<div class="box"><h3>Mes points</h3>${vMyPoints()}</div>`;
+  if(isOpen()&&n>1) for(let k=n-1;k>=1;k--) html+=vFranceFull(k,`Ce qu'a choisi la France · manche ${k}`);
   return html+vRules();
 }
 
@@ -753,7 +760,7 @@ function vResultats(){
     ${R.ord.some(Boolean)?R.ord.map((id,i)=>`<div class="rk p${i+1}"><div class="pos">${i+1}</div><div class="grow"><b>${id?"Miss "+BY[id].region:"…"}</b><div class="det">${ORDER_LABELS[i]}</div></div></div>`).join(""):""}
     ${R.top5.length&&!R.ord.some(Boolean)?`<div class="det" style="margin:4px 0">Top 5</div><div class="picks">${R.top5.map(id=>`<span class="pk on">${BY[id].region}</span>`).join("")}</div>`:""}
     ${R.top15.length?`<div class="det" style="margin:10px 0 4px">Top 15</div><div class="picks">${R.top15.map(id=>`<span class="pk ${roundOf(P,1).slice(0,15).includes(id)?"on":""}">${BY[id].region}</span>`).join("")}</div><div class="det" style="margin-top:6px">En doré : celles que tu avais dans ton top 15.</div>`:`<div class="det">Pas encore de résultats.</div>`}</div>`;
-  [1,2,3].forEach(n=>{const f=frRef(n);if(f&&f.length){const k=MANCHES[n].k;html+=`<div class="box"><h3>Manche ${n} · ce qu'a choisi la France</h3>${f.slice(0,k).map((id,i)=>`<div class="rk p${i+1}"><div class="pos">${i+1}</div><div class="grow"><b>Miss ${BY[id].region}</b></div></div>`).join("")}<div class="det" style="margin-top:6px">D'après ${FR[n].voters} classement${FR[n].voters>1?"s":""}.</div></div>`;}});
+  [3,2,1].forEach(n=>{html+=vFranceFull(n,`Manche ${n} · ce qu'a choisi la France`);});
   html+=`<div class="box"><h3>L'appli en chiffres</h3><div class="stat"><div><b>${STATS?.players??"–"}</b>joueuses</div><div><b>${STATS?.voters??"–"}</b>classements</div></div></div>
   <button class="btn wide" data-a="story">Partager mon top en story</button>`;
   return html;
