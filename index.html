@@ -255,6 +255,60 @@ const QUIZ = [
  ["Miss France","Sur quelle île les candidates de 2027 ont-elles fait leur voyage de préparation ?",["La Martinique","Saint-Martin","La Réunion","Tahiti"],1,"Une première pour l'élection."]
 ];
 
+/* ===================== TEST « QUELLE MISS ES-TU ? » ===================== */
+const TAGLABEL={sport:"le sport",mer:"la mer",montagne:"la montagne",voyage:"les voyages",mode:"la mode",creatif:"la créativité",danse:"la danse",musique:"la musique",cheval:"l'équitation",animaux:"les animaux",soin:"prendre soin des autres",mental:"la santé mentale",enfants:"les enfants",solidarite:"la solidarité",femmes:"les droits des femmes",justice:"la justice",business:"l'esprit d'entreprise",ambition:"l'ambition",fete:"la bonne humeur",famille:"la famille",racines:"tes racines",douceur:"la bienveillance",resilience:"la résilience",culture:"la culture"};
+const PERSO_Q=[
+ ["Ton samedi idéal, c'est…",[["Un match ou un bon entraînement",["sport"]],["Plage, masque et tuba",["mer"]],["Shopping et séance d'essayage",["mode"]],["Un cours de danse, puis une soirée",["danse","fete"]],["Une balade à cheval",["cheval"]]]],
+ ["Si tu devais choisir un métier, ce serait…",[["Soigner les autres",["soin"]],["Monter ma propre boîte",["business","ambition"]],["Protéger, rendre la justice",["justice"]],["Enseigner aux enfants",["enfants"]],["Créer : mode, photo, com",["creatif"]]]],
+ ["La cause qui te fait vibrer…",[["Les droits des femmes",["femmes"]],["La protection des animaux",["animaux"]],["La santé mentale",["mental"]],["L'inclusion des personnes handicapées",["solidarite"]],["La protection de l'enfance",["enfants"]]]],
+ ["Ta prochaine valise part…",[["Au bout du monde, sac à dos",["voyage"]],["Sur une île, eau turquoise",["mer"]],["À la montagne",["montagne"]],["Chez moi, retrouver mes racines",["racines"]]]],
+ ["Tes amies disent de toi que tu es…",[["La sportive de la bande",["sport"]],["La solaire qui met l'ambiance",["fete"]],["La confidente toujours à l'écoute",["douceur","soin"]],["L'ambitieuse qui a toujours un plan",["ambition"]],["L'artiste du groupe",["creatif"]]]],
+ ["Ton animal totem…",[["Le cheval",["cheval"]],["Le chien",["animaux"]],["Le dauphin",["mer"]],["Le lion",["ambition"]],["Le papillon",["danse","creatif"]]]],
+ ["En musique, tu es plutôt…",[["Je joue d'un instrument",["musique"]],["Je danse dès la première note",["danse"]],["Playlist à fond pour le sport",["sport"]],["Les musiques de chez moi",["racines"]]]],
+ ["Ta plus grande fierté…",[["Ma région, mes racines",["racines"]],["Ma famille",["famille"]],["Mes études, mes diplômes",["culture"]],["M'être relevée après une épreuve",["resilience"]]]],
+ ["Ta tenue pour la grande soirée…",[["Robe longue glamour",["mode"]],["Tailleur chic",["business"]],["Robe fluide et bohème",["douceur"]],["Une tenue où je peux bouger",["sport","danse"]]]],
+ ["Face à un obstacle…",[["Je fonce",["ambition"]],["J'en fais une force",["resilience"]],["Je m'entoure des miens",["famille"]],["Je souris et j'avance",["fete"]]]]
+];
+const PERSO={
+ c0:[["fete","business","ambition"],"Étudiante en événementiel en alternance, Chiara est organisée, ambitieuse et vise le top 5. Comme toi, elle sait où elle va… et comment y aller en beauté."],
+ c1:[["mode","creatif","ambition"],"Étudiante en école de mode, Solène rêve de devenir styliste. Elle a décroché son écharpe à sa troisième tentative : créative et persévérante, comme toi."],
+ c2:[["business","femmes","ambition"],"En master d'école de commerce, Lina veut représenter les femmes qui étudient, travaillent et entreprennent. Toi aussi, tu as l'âme d'une cheffe."],
+ c3:[["justice","enfants","sport"],"Étudiante en droit à Brest et sportive, Margot rêve de devenir juge des enfants. Un sens de la justice et un cœur immense : tout toi."],
+ c4:[["soin","danse","mental"],"Infirmière en psychiatrie et danseuse depuis toute petite, Ilona veut briser les tabous autour de la santé mentale. Douce, engagée, et toujours en mouvement."],
+ c5:[["voyage","business","fete"],"Responsable marketing, Justine adore voyager et porte un tatouage « Viva la vida » fait aux Philippines. Comme toi, elle croque la vie à pleines dents."],
+ c6:[["enfants","mode","creatif"],"Diplômée d'un master dans les métiers de l'enseignement, Céline est aussi mannequin et modèle photo. Pédagogue et créative : le combo parfait."],
+ c7:[["voyage","musique","sport"],"Hôtesse de l'air chez Air Corsica, Satine joue au volley et au piano. Toujours entre deux avions, comme toi elle a la bougeotte."],
+ c8:[["mer","sport","animaux"],"Étudiante à l'EDHEC, volleyeuse, May a passé son permis bateau à 16 ans. Elle défend la cause animale et la recherche contre le cancer. Sportive, iodée, engagée."],
+ c9:[["soin","sport","mer"],"Infirmière qui vise médecine, Emma court, pédale et surveille les plages comme sauveteuse en mer bénévole. Toi aussi, tu as un vrai cœur de héroïne."],
+ c10:[["soin","enfants","resilience"],"Infirmière coordinatrice en petite enfance, Sandra est dyslexique et sensibilise aux troubles DYS. Elle a fait de sa différence une force, comme toi."],
+ c11:[["mode","mer","femmes","creatif"],"Conseillère en parfumerie, passionnée de mode, de dessin et de plongée, Julia s'engage contre les violences faites aux femmes. Créative, et forte."],
+ c12:[["sport","culture"],"Ancienne joueuse de tennis de haut niveau, Camilla a fait des études de journalisme. Compétitrice et curieuse : tu as tout d'une championne."],
+ c13:[["mer","voyage","racines"],"Consultante, Candice adore nager, faire du snorkeling et voyager. Elle parle occitan et a déjà nagé avec des requins. Aventurière, comme toi."],
+ c14:[["famille","business","resilience"],"Étudiante en gestion, Élise s'est lancée sur les conseils de son grand-père et a gagné après plusieurs tentatives. La famille, la persévérance : tout toi."],
+ c15:[["mode","cheval","voyage"],"En BTS commerce dans une boutique de luxe de seconde main, Léane adore voyager et monter à cheval. Déterminée et stylée, comme toi."],
+ c16:[["racines","soin","douceur"],"Diplômée en management de la santé, Maureen-Alycia veut porter haut la culture martiniquaise et prône l'amour et la bienveillance. Ton âme sœur douceur."],
+ c17:[["enfants","femmes","sport","racines"],"Diplômée de lettres, Emma rêve d'être professeure des écoles, joue au basket et s'engage contre les violences faites aux femmes. Fière de son lagon, et de ses valeurs."],
+ c18:[["sport","justice","femmes"],"Ancienne joueuse du Stade Toulousain, championne de France Espoirs, Carla a réussi le concours de sous-officier de gendarmerie. Elle casse les clichés : comme toi."],
+ c19:[["fete","racines"],"La benjamine de la promo, lycéenne pétillante, Lana veut faire découvrir la diversité de la Nouvelle-Calédonie. Énergie solaire garantie."],
+ c20:[["cheval","voyage","solidarite"],"Étudiante en langues, aux racines portugaises, Shana fait des concours d'équitation avec sa jument Chelsea et aide les personnes isolées. Généreuse, comme toi."],
+ c21:[["cheval","creatif","solidarite"],"Comptable, cavalière, photographe et mannequin, Pauline s'engage pour l'inclusion des personnes handicapées, en hommage à sa cousine. Un cœur en or."],
+ c22:[["enfants","solidarite","douceur"],"Éducatrice, Maëlle accompagne des élèves en situation de handicap au lycée. Patiente et bienveillante : la confidente que tout le monde rêve d'avoir."],
+ c23:[["cheval","creatif","business"],"La rousse de la promo ! Marie étudie la communication en alternance et monte à cheval depuis ses 3 ans. Créative et passionnée, comme toi."],
+ c24:[["famille","mode","business"],"Gérante d'une boutique de robes de mariée et maman de deux enfants, Mandy est la première maman et la doyenne de l'histoire de l'élection. Audacieuse, comme toi."],
+ c25:[["soin","femmes","fete"],"Kiné spécialisée en santé des femmes, issue d'une famille de pompiers, Ophélie se décrit comme solaire et passionnée. Toi aussi, tu illumines la pièce."],
+ c26:[["soin","mental","racines"],"Future pharmacienne, Laetitia est sensible à la santé mentale et fière du métissage réunionnais. Attentionnée et fière de ses racines, comme toi."],
+ c27:[["business","ambition"],"Lyonnaise, cheffe de projet marketing, Julia a enchaîné trois écharpes en 2026. Une vraie gagnante : toi aussi, tu ne fais rien à moitié."],
+ c28:[["montagne","danse","resilience","solidarite","culture"],"Kiné, danseuse, plongeuse, randonneuse et skieuse, Juliette a passé plusieurs mois en fauteuil et soutient les enfants handicapés. Une force tranquille."],
+ c29:[["animaux","mode","business"],"Manager pour une marque automobile et mannequin, Naïla rêve d'ouvrir un refuge pour chiens errants sur son île. Business woman au grand cœur."],
+ c30:[["danse","racines","femmes"],"Professeure de Ori Tahiti, la danse traditionnelle, Leia s'engage pour la recherche sur l'endométriose et fait rayonner la culture polynésienne."]
+};
+function persoResult(ans){
+  const tags={}; ans.forEach((a,i)=>{ if(a==null) return; PERSO_Q[i][1][a][1].forEach(t=>tags[t]=(tags[t]||0)+1); });
+  const seed=ans.join("").split("").reduce((h,c)=>(h*31+c.charCodeAt(0))%9973,7);
+  const sc=CANDS.map((c,k)=>{const tg=PERSO[c.id][0];const s=tg.reduce((a,t)=>a+(tags[t]||0),0)/Math.sqrt(tg.length);return {id:c.id,s:s+((k*37+seed)%31)/1000,common:tg.filter(t=>tags[t])};});
+  sc.sort((a,b)=>b.s-a.s); return sc[0];
+}
+
 /* ===================== ACCÈS À LA BASE ===================== */
 function makeApi(){
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -409,7 +463,7 @@ function tick(){
 }
 
 /* ===================== VUES ===================== */
-const TABS=[["jouer","Jouer"],["noter","Noter"],["quiz","Culture G"],["groupes","Groupes"],["resultats","Résultats"]];
+const TABS=[["jouer","Jouer"],["noter","Noter"],["quiz","Tests"],["groupes","Groupes"],["resultats","Résultats"]];
 function render(soft){
   if(DRAG) return;
   const app=document.getElementById("app"), nav=document.getElementById("navbar");
@@ -465,7 +519,7 @@ function vMyPoints(){
 function rankItem(id,i,k,extra){
   const c=BY[id];
   return `<li data-id="${id}" class="${i<k?"in":""}"><button class="pos" data-a="moveto" data-v="${id}" title="Déplacer">${i+1}</button>
-    <div class="grow"><b>Miss ${c.region}</b><div class="det">${c.name}</div></div>${extra||""}<span class="handle" aria-label="Glisser">${GRIP}</span></li>`;
+    <div class="grow"><b>Miss ${c.region}</b>${P.soulmate===id?' <span style="color:var(--gold)">⭐</span>':""}<div class="det">${c.name}</div></div>${extra||""}<span class="handle" aria-label="Glisser">${GRIP}</span></li>`;
 }
 function vJouer(){
   const n=Math.min(R.manche,3), M=MANCHES[n];
@@ -509,7 +563,7 @@ function candCard(c,cr){
   const s=avg(P,c.id),open=UI.open===c.id,n=(P.notes||{})[c.id]||{};
   const q=encodeURIComponent(`Miss ${c.region} 2026 ${c.name} instagram`);
   return `<div class="cand ${open?"open":""}"><div class="row"><button class="chead" data-a="open" data-v="${c.id}">
-     <div class="num">${c.n}</div><div class="grow"><div class="cname">Miss ${c.region}</div><div class="creg">${c.name} · ${c.age} ans</div></div>
+     <div class="num">${c.n}</div><div class="grow"><div class="cname">Miss ${c.region}${P.soulmate===c.id?' <span style="color:var(--gold)">⭐</span>':""}</div><div class="creg">${c.name} · ${c.age} ans</div></div>
      <div class="score">${s!==null?`<b>${s.toFixed(1)}</b><small>${done(P,c.id)?"/10":"en cours"}</small>`:`<small>à noter</small>`}</div></button>
      <button class="heart ${P.coeur===c.id?"on":""}" data-a="coeur" data-v="${c.id}" aria-label="Coup de cœur">❤️</button></div>
    ${open?`<div class="cbody">${cr.map(k=>`<div class="crit"><div class="lab"><span>${k.label}</span><span>${typeof n[k.id]==="number"?n[k.id]+"/10":""}</span></div>
@@ -536,7 +590,7 @@ function vGroupes(){
       <button class="btn gold wide" data-a="share" data-v="${L.id}">Inviter des copines</button></div>
     <div class="box"><h3>Le classement du groupe</h3><div class="det" style="margin-bottom:6px">Moyenne de vos notes</div>
       ${gt.length?gt.map((x,i)=>`<div class="rk p${i+1}"><div class="pos">${i+1}</div><div class="grow"><b>Miss ${BY[x.id].region}</b><div class="det">${BY[x.id].name} · ${x.n} avis</div></div><span class="val">${x.s.toFixed(1)}</span></div>`).join(""):`<div class="det">Personne n'a encore noté. Direction l'onglet Noter !</div>`}</div>
-    <div class="box"><h3>Les copines</h3>${ps.map(p=>`<div class="lb ${p.id===P.id?"mine":""}"><div class="av">${esc(p.emoji)}</div><div class="grow"><b>${esc(p.name)}</b><div class="det">${CANDS.filter(c=>done(p,c.id)).length}/31 notées${p.coeur?` · coup de cœur : Miss ${BY[p.coeur].region}`:""}</div></div></div>`).join("")}</div>
+    <div class="box"><h3>Les copines</h3>${ps.map(p=>`<div class="lb ${p.id===P.id?"mine":""}"><div class="av">${esc(p.emoji)}</div><div class="grow"><b>${esc(p.name)}</b><div class="det">${CANDS.filter(c=>done(p,c.id)).length}/31 notées${p.coeur?` · coup de cœur : Miss ${BY[p.coeur].region}`:""}${p.soulmate?` · sa Miss : ${BY[p.soulmate].region} ⭐`:""}${p.quiz_total?` · culture G ${String(qNote(p.quiz_score)).replace(".",",")}/20`:""}</div></div></div>`).join("")}</div>
     <div class="box"><h3>Reine du prono</h3>${board("tv")}</div>
     <div class="box"><h3>En phase avec la France</h3>${board("fr")}${!(R.manche>1||R.votes_locked)?`<div class="det" style="margin-top:6px">Les points tombent à la fin de chaque manche, le soir de l'élection.</div>`:""}</div>
     <div style="text-align:center"><button class="btn sm ghost danger" data-a="leave" data-v="${L.id}">Quitter ce groupe</button></div>`;
@@ -583,11 +637,11 @@ function qState(){ if(!UI.qz){ try{UI.qz=JSON.parse(ls.get(QKEY))||null;}catch(e
 function qSave(){ ls.set(QKEY,JSON.stringify(UI.qz)); }
 const qCorrect=ans=>QUIZ.filter((q,i)=>ans[i]===q[3]).length;
 const qNote=c=>Math.round(c/QUIZ.length*200)/10;
-function vQuiz(){
+function vCulture(){
   const q=qState();
   if(!q.started) {
     const prev=P.quiz_total?qNote(P.quiz_score):null;
-    return `<h2>Le test de culture G des Miss</h2>
+    return `<button class="link" data-a="test" data-v="" style="margin-top:14px">← Tous les tests</button><h2>Le test de culture G des Miss</h2>
     <div class="box"><p style="margin-bottom:10px">Les 31 candidates ont passé leur test de culture générale pendant leur voyage à Saint-Martin. <b>Et toi, tu aurais eu combien ?</b></p>
     <div class="stat" style="margin:12px 0"><div><b>${QUIZ.length}</b>questions</div><div><b>/20</b>la note</div><div><b>${STATS?.quiz_avg??"–"}</b>moyenne France</div></div>
     <p class="det">Actualité, culture web, arts & mode, histoire, géographie, français, logique… Pas de chrono, prends ton temps. Ta note s'affiche dans tes groupes et compte pour la moyenne de la France.</p>
@@ -618,6 +672,55 @@ function vQuiz(){
   <button class="btn wide" data-a="qstart">Refaire le test</button>
   <p class="det" style="text-align:center;margin:22px 0 6px;opacity:.7">Curieuse ? Le test passé par les candidates a été publié dans la presse : <a href="${QUIZ_REAL_TEST}" target="_blank" rel="noopener">le voir ici</a>.</p>`;
   return html;
+}
+
+
+function vQuiz(){
+  if(UI.test==="culture") return vCulture();
+  if(UI.test==="perso") return vPerso();
+  const me=P.soulmate&&BY[P.soulmate];
+  return `<h2>Les tests</h2><div class="sub">De quoi patienter jusqu'au 12 décembre.</div>
+  <button class="box" style="display:block;width:100%;text-align:left" data-a="test" data-v="perso"><div class="pill gold">Test de personnalité</div>
+    <h2 style="margin-top:8px">Quelle Miss es-tu ?</h2><div class="sub" style="margin:0">10 questions, comme dans les magazines.${me?` Ta Miss : <b style="color:var(--txt)">Miss ${me.region}</b>`:""}</div></button>
+  <button class="box" style="display:block;width:100%;text-align:left" data-a="test" data-v="culture"><div class="pill gold">Culture G</div>
+    <h2 style="margin-top:8px">Le test de culture G des Miss</h2><div class="sub" style="margin:0">${QUIZ.length} questions, note sur 20.${P.quiz_total?` Ta note : <b style="color:var(--txt)">${String(qNote(P.quiz_score)).replace(".",",")}/20</b>`:""}</div></button>`;
+}
+const PKEY="lelue-perso";
+function pState(){ if(!UI.ps){ try{UI.ps=JSON.parse(ls.get(PKEY))||null;}catch(e){} if(!UI.ps) UI.ps={i:0,ans:[],started:false,done:false}; } return UI.ps; }
+function pSave(){ ls.set(PKEY,JSON.stringify(UI.ps)); }
+function vPerso(){
+  const q=pState(), back=`<button class="link" data-a="test" data-v="" style="margin-top:14px">← Tous les tests</button>`;
+  if(!q.started) return back+`<h2>Quelle Miss es-tu ?</h2><div class="box"><p style="margin-bottom:10px">Sportive, solaire, aventurière ou cœur tendre ? Réponds à 10 questions et découvre laquelle des 31 candidates te ressemble le plus.</p>
+    <p class="det">Réponds spontanément, il n'y a pas de bonne réponse !</p><button class="btn gold wide" style="margin-top:12px" data-a="pstart">Je fais le test</button></div>`;
+  if(!q.done){ const it=PERSO_Q[q.i];
+    return `<div class="row" style="margin-top:14px"><span class="pill gold">Quelle Miss es-tu ?</span><span class="det" style="margin-left:auto">${q.i+1}/${PERSO_Q.length}</span></div>
+    <div class="prog"><i style="width:${q.i/PERSO_Q.length*100}%"></i></div>
+    <h2 style="font-size:24px;line-height:1.3;margin:16px 0 10px">${esc(it[0])}</h2>
+    ${it[1].map((o,k)=>`<button class="qopt ${q.ans[q.i]===k?"on":""}" data-a="pans" data-v="${k}"><b style="color:var(--gold);margin-right:8px">${"ABCDE"[k]}</b>${esc(o[0])}</button>`).join("")}
+    ${q.i>0?`<button class="btn sm ghost" data-a="pprev" style="margin-top:10px">← Précédente</button>`:""}`; }
+  const r=persoResult(q.ans), c=BY[r.id], txt=PERSO[r.id][1], isMine=P.soulmate===r.id;
+  return back+`<div class="box" style="text-align:center;margin-top:12px"><div class="det" style="text-transform:uppercase;letter-spacing:2px">Tu es…</div>
+    <div class="logo" style="font-size:40px;margin:8px 0;line-height:1.1">Miss ${c.region}</div><div class="sub">${c.name}</div>
+    <p style="text-align:left;margin:10px 0">${esc(txt)}</p>
+    ${r.common.length?`<div class="det" style="text-align:left">Vos points communs : ${r.common.map(t=>TAGLABEL[t]).join(", ")}.</div>`:""}
+    <button class="btn gold wide" style="margin-top:14px" data-a="psoul" data-v="${r.id}" ${isMine?"disabled":""}>${isMine?"⭐ C'est ta Miss de cœur":"⭐ En faire ma Miss de cœur"}</button>
+    <div class="det" style="margin-top:6px">Elle aura une étoile partout dans l'appli, et tu pourras suivre son parcours le soir de l'élection.</div>
+    <button class="btn wide" style="margin-top:10px" data-a="pstory" data-v="${r.id}">Partager en story</button></div>
+  <button class="btn wide ghost" data-a="pstart">Refaire le test</button>`;
+}
+async function makePersoStory(id){
+  const c=BY[id]; const cv=document.createElement("canvas"); cv.width=1080; cv.height=1920; const g=cv.getContext("2d");
+  try{await document.fonts.load("italic 800 150px 'Playfair Display'");await document.fonts.load("800 120px 'Playfair Display'");await document.fonts.load("500 40px 'DM Sans'");}catch(e){}
+  const bg=g.createRadialGradient(540,200,50,540,700,1400); bg.addColorStop(0,"#3b1f63"); bg.addColorStop(1,"#120a1d"); g.fillStyle=bg; g.fillRect(0,0,1080,1920);
+  const gold=g.createLinearGradient(100,0,980,0); gold.addColorStop(0,"#f2c46d"); gold.addColorStop(.5,"#fff1cf"); gold.addColorStop(1,"#e0a63a");
+  g.textAlign="center"; g.fillStyle=gold; g.font="italic 800 150px 'Playfair Display'"; g.fillText("L'Élue",540,290);
+  g.fillStyle="#b9a8cc"; g.font="500 52px 'DM Sans'"; g.fillText("Quelle Miss es-tu ?",540,600); g.fillText("Je suis…",540,720);
+  g.fillStyle=gold; let fs=130; g.font=`800 ${fs}px 'Playfair Display'`; while(g.measureText("Miss "+c.region).width>960&&fs>60){fs-=6;g.font=`800 ${fs}px 'Playfair Display'`;}
+  g.fillText("Miss "+c.region,540,950);
+  g.fillStyle="#f6effa"; g.font="500 52px 'DM Sans'"; g.fillText(c.name,540,1060);
+  g.fillStyle="#f6effa"; g.font="700 52px 'DM Sans'"; g.fillText("Et toi, quelle Miss es-tu ?",540,1500);
+  g.fillStyle="#f2c46d"; g.font="700 44px 'DM Sans'"; g.fillText(SITE,540,1830);
+  return new Promise(res=>cv.toBlob(b=>res({blob:b,url:cv.toDataURL("image/png")}),"image/png"));
 }
 
 /* ===================== ADMIN ===================== */
@@ -764,6 +867,12 @@ document.addEventListener("click",async e=>{
     case "next": { const i=CANDS.findIndex(c=>c.id===v); const nx=CANDS.slice(i+1).concat(CANDS.slice(0,i)).find(c=>!done(P,c.id)); UI.open=nx?nx.id:null; if(!nx) toast("Toutes notées !");
       setTimeout(()=>{const el=document.querySelector(".cand.open"); el&&el.scrollIntoView({behavior:"smooth",block:"start"});},30); break; }
     case "coeur": patch({coeur:P.coeur===v?null:v}); if(P.coeur) toast(`Coup de cœur : Miss ${BY[v].region}`); break;
+    case "test": UI.test=v||null; window.scrollTo(0,0); break;
+    case "pstart": UI.ps={i:0,ans:[],started:true,done:false}; pSave(); window.scrollTo(0,0); break;
+    case "pans": { const q=pState(); q.ans[q.i]=+v; if(q.i<PERSO_Q.length-1) q.i++; else q.done=true; pSave(); window.scrollTo(0,0); break; }
+    case "pprev": { const q=pState(); if(q.i>0) q.i--; pSave(); break; }
+    case "psoul": patch({soulmate:v}); toast(`Miss ${BY[v].region} est ta Miss de cœur ⭐`); break;
+    case "pstory": showStory(await makePersoStory(v)); return;
     case "qstart": UI.qz={i:0,ans:[],started:true,done:false}; qSave(); window.scrollTo(0,0); break;
     case "qans": { const q=qState(); q.ans[q.i]=+v; if(q.i<QUIZ.length-1) q.i++; else { q.done=true; const c=qCorrect(q.ans);
         if(!P.quiz_total){ patch({quiz_score:c,quiz_total:QUIZ.length}); refreshShared().then(()=>render(true)); } }
