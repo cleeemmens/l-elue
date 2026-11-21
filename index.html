@@ -321,7 +321,31 @@ const QUIZ = [
  ["Logique","Marie a 4 filles et chacune d'elles a un frère. Combien Marie a-t-elle d'enfants ?",["5","8","6","4"],0,"Elles ont toutes le même frère."],
  // Miss France
  ["Miss France","Qui présente l'élection de Miss France sur TF1 depuis plus de 30 ans ?",["Nikos Aliagas","Jean-Pierre Foucault","Arthur","Michel Drucker"],1,"Il présente l'élection depuis 1995."],
- ["Miss France","Sur quelle île les candidates de 2027 ont-elles fait leur voyage de préparation ?",["La Martinique","Saint-Martin","La Réunion","Tahiti"],1,"Une première pour l'élection."]
+ ["Miss France","Sur quelle île les candidates de 2027 ont-elles fait leur voyage de préparation ?",["La Martinique","Saint-Martin","La Réunion","Tahiti"],1,"Une première pour l'élection."],
+ // Actualité (suite)
+ ["Actualité","Quelle région accueillera les Jeux olympiques d'hiver de 2030 ?",["Les Pyrénées","Les Alpes françaises","Le Jura","Les Vosges"],1,"Attribués à la France en 2024."],
+ ["Actualité","Quels pays organiseront l'Euro de football 2028 ?",["Le Royaume-Uni et l'Irlande","L'Espagne et le Portugal","L'Italie et la Turquie","La France"],0,"L'Angleterre, l'Écosse, le pays de Galles et l'Irlande."],
+ // Sport & divertissement
+ ["Sport & divertissement","Quel nageur français a remporté quatre médailles d'or individuelles aux JO de Paris 2024 ?",["Florent Manaudou","Léon Marchand","Maxime Grousset","Yannick Agnel"],1,"Il est devenu le héros des Jeux."],
+ ["Sport & divertissement","Qui a allumé la vasque olympique lors de la cérémonie d'ouverture de Paris 2024 ?",["Zinédine Zidane et Tony Parker","Marie-José Pérec et Teddy Riner","Amélie Mauresmo et Kylian Mbappé","Laure Manaudou et Tony Estanguet"],1,"La vasque s'est ensuite élevée dans le ciel des Tuileries."],
+ ["Sport & divertissement","Quelle chanteuse a interprété « L'Hymne à l'amour » depuis la tour Eiffel lors de la cérémonie d'ouverture de Paris 2024 ?",["Mylène Farmer","Céline Dion","Aya Nakamura","Lady Gaga"],1,"Son grand retour sur scène."],
+ ["Sport & divertissement","Quel film a reçu l'Oscar du meilleur film en 2024 ?",["Barbie","Oppenheimer","Anatomie d'une chute","Killers of the Flower Moon"],1,"Réalisé par Christopher Nolan."],
+ ["Sport & divertissement","Quel youtubeur a créé la course automobile « GP Explorer » ?",["Cyprien","Squeezie","Inoxtag","Michou"],1,"Une course entre créateurs de contenu."],
+ // Arts & littérature (suite)
+ ["Arts & mode","Qui a peint « Le Radeau de la Méduse » ?",["Eugène Delacroix","Théodore Géricault","Jacques-Louis David","Gustave Courbet"],1,"Exposé au Louvre."],
+ ["Arts & mode","Qui a écrit « Les Fleurs du mal » ?",["Arthur Rimbaud","Paul Verlaine","Charles Baudelaire","Victor Hugo"],2,"Publié en 1857."],
+ ["Arts & mode","À qui doit-on la célèbre « petite robe noire » des années 1920 ?",["Christian Dior","Gabrielle Chanel","Yves Saint Laurent","Jeanne Lanvin"],1,"Un basique devenu iconique."],
+ // Miss France
+ ["Miss France","Qui a été élue Miss France 2026 ?",["Hinaupoko Devèze","Ève Gilles","Indira Ampiot","Angélique Angarni-Filopon"],0,"Elle représentait Tahiti."],
+ ["Miss France","Quelle région représentait Ève Gilles, Miss France 2024 ?",["La Normandie","Le Nord-Pas-de-Calais","La Picardie","La Lorraine"],1,"Elle a été couronnée à Dijon."],
+ ["Miss France","Quelle région représentait Angélique Angarni-Filopon, Miss France 2025 ?",["La Guadeloupe","La Martinique","La Réunion","La Guyane"],1,"Elle a été élue à 34 ans."],
+ ["Miss France","Quelle Miss France a été élue Miss Univers en 2017 ?",["Iris Mittenaere","Flora Coquerel","Camille Cerf","Marine Lorphelin"],0,"Miss France 2016, originaire du Nord."],
+ ["Miss France","Où s'est déroulée l'élection de Miss France 2025 ?",["Au Zénith de Lille","Au Futuroscope","Au Puy du Fou","À Disneyland Paris"],1,"Et c'est encore le cas en 2027 !"],
+ ["Miss France","Qui a été élue Miss France 2002, avant de diriger la société Miss France ?",["Sylvie Tellier","Laetitia Bléger","Corinne Coman","Elodie Gossuin"],0,"Elle a dirigé l'organisation pendant des années."],
+ ["Miss France","Mandy Goudal, Miss Poitou-Charentes 2026, est la première candidate de l'histoire à être…",["Avocate","Maman","Championne olympique","Mariée à un acteur"],1,"Elle est aussi la doyenne de l'élection, à 38 ans."],
+ ["Miss France","Combien de candidates se présentent à l'élection de Miss France 2027 ?",["29","30","31","32"],2,"Avec le retour de Saint-Martin et Saint-Barthélemy."],
+ ["Miss France","Quelle Miss France 2019 représentait Tahiti ?",["Vaimalama Chaves","Maëva Coucke","Clémence Botino","Diane Leyre"],0,"La quatrième Miss Tahiti couronnée."],
+ ["Miss France","Qui a été élue Miss France 2022 ?",["Amandine Petit","Diane Leyre","Indira Ampiot","Clémence Botino"],1,"Elle représentait l'Île-de-France."]
 ];
 
 /* ===================== TEST « QUELLE MISS ES-TU ? » ===================== */
@@ -371,11 +395,15 @@ const PERSO={
  c29:[["animaux","mode","business"],"Manager pour une marque automobile et mannequin, Naïla rêve d'ouvrir un refuge pour chiens errants sur son île. Business woman au grand cœur."],
  c30:[["danse","racines","femmes"],"Professeure de Ori Tahiti, la danse traditionnelle, Leia s'engage pour la recherche sur l'endométriose et fait rayonner la culture polynésienne."]
 };
+const PERSO_BIAS=[-0.127,-0.08,0.022,0.063,-0.115,0.104,0.113,-0.132,-0.184,-0.061,0.052,0.037,-0.006,0.028,0.013,0.151,-0.15,-0.031,0.067,-0.106,0.208,0.154,0.07,0.148,0.023,0.09,0.051,-0.062,-0.235,0.046,-0.152];
+const PERSO_IDF=(()=>{const f={};Object.values(PERSO).forEach(p=>p[0].forEach(t=>f[t]=(f[t]||0)+1));return t=>1/Math.sqrt(f[t]||1);})();
 function persoResult(ans){
-  const tags={}; ans.forEach((a,i)=>{ if(a==null) return; PERSO_Q[i][1][a][1].forEach(t=>tags[t]=(tags[t]||0)+1); });
-  const seed=ans.join("").split("").reduce((h,c)=>(h*31+c.charCodeAt(0))%9973,7);
-  const sc=CANDS.map((c,k)=>{const tg=PERSO[c.id][0];const s=tg.reduce((a,t)=>a+(tags[t]||0),0)/Math.sqrt(tg.length);return {id:c.id,s:s+((k*37+seed)%31)/1000,common:tg.filter(t=>tags[t])};});
-  sc.sort((a,b)=>b.s-a.s); return sc[0];
+  const tags={}; ans.forEach((sel,i)=>{ if(sel==null) return; if(!Array.isArray(sel)) sel=[sel]; if(!sel.length) return; const w=1/sel.length;
+    sel.forEach(o=>PERSO_Q[i][1][o][1].forEach(t=>tags[t]=(tags[t]||0)+w)); });
+  let best=null;
+  CANDS.forEach((c,k)=>{const tg=PERSO[c.id][0];const s=tg.reduce((a,t)=>a+(tags[t]||0)*PERSO_IDF(t),0)/Math.sqrt(tg.length)+PERSO_BIAS[k];
+    if(!best||s>best.s) best={id:c.id,s,common:tg.filter(t=>tags[t])};});
+  return best;
 }
 
 /* ===================== ACCÈS À LA BASE ===================== */
@@ -391,7 +419,8 @@ function makeApi(){
     async saveProfile(id,patch){ ok(await sb.from("profiles").update(patch).eq("id",id)); },
     async recoveryCode(){ return ok(await sb.rpc("my_recovery_code")); },
     async recover(code){ return ok(await sb.rpc("recover_profile",{p_code:code})); },
-    async createLeague(name){ return ok(await sb.rpc("create_league",{p_name:name})); },
+    async createLeague(name,crits){ return ok(await sb.rpc("create_league",{p_name:name,p_crits:crits})); },
+    async setLeagueCrits(id,crits){ return ok(await sb.rpc("set_league_crits",{p_league:id,p_crits:crits})); },
     async joinLeague(code){ return ok(await sb.rpc("join_league",{p_code:code})); },
     async leaveLeague(leagueId,profileId){ return ok(await sb.from("league_members").delete().eq("league_id",leagueId).eq("profile_id",profileId)); },
     async myLeagues(){ return ok(await sb.rpc("my_leagues"))||[]; },
@@ -421,9 +450,10 @@ const errMsg=e=>{const m=(e&&e.message)||String(e);for(const k in ERRORS) if(m.i
 function toast(t,err){const o=document.createElement("div");o.className="toast"+(err?" err":"");o.textContent=t;document.body.appendChild(o);setTimeout(()=>o.remove(),2600);}
 
 /* ===================== CALCULS ===================== */
-const critsOf=p=>p.mode==="global"?[{id:"global",label:"Note globale"}]:CRITS.filter(c=>(p.crits||[]).includes(c.id));
-function avg(p,cid){const n=(p.notes||{})[cid];if(!n)return null;const v=critsOf(p).map(c=>n[c.id]).filter(x=>typeof x==="number");return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;}
-const done=(p,cid)=>{const n=(p.notes||{})[cid]||{};const c=critsOf(p);return c.length>0&&c.every(k=>typeof n[k.id]==="number");};
+const ALLC=CRITS.map(c=>c.id);
+const critsOf=()=>CRITS;
+function avg(p,cid,ids){const n=(p.notes||{})[cid];if(!n)return null;const v=(ids||ALLC).map(k=>n[k]).filter(x=>typeof x==="number");return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;}
+const done=(p,cid,ids)=>{const n=(p.notes||{})[cid]||{};return (ids||ALLC).some(k=>typeof n[k]==="number");};
 const notesOrder=p=>CANDS.map(c=>({c,s:avg(p,c.id)})).sort((a,b)=>(b.s??-1)-(a.s??-1)||a.c.n-b.c.n).map(x=>x.c.id);
 const pool=n=>n===1?CANDS.map(c=>c.id):n===2?R.top15:R.top5;
 const resultReady=n=>n===1?R.top15.length===15:n===2?R.top5.length===5:R.ord.every(Boolean);
@@ -646,10 +676,9 @@ function vJouer(){
 
 function vNoter(){
   const cr=critsOf(P), nDone=CANDS.filter(c=>done(P,c.id)).length;
-  if(!cr.length) return `<div class="empty">Aucun critère activé.<br><br><button class="btn gold" data-a="tab" data-v="profil">Choisir mes critères</button></div>`;
   let list=CANDS.filter(c=>UI.filter==="all"||(UI.filter==="todo"?!done(P,c.id):done(P,c.id)));
   if(UI.q){const q=UI.q.toLowerCase();list=list.filter(c=>(c.region+" "+c.name).toLowerCase().includes(q));}
-  return `<h2>Noter les candidates</h2><div class="sub">${nDone}/31 notées · tes notes comptent dans tes groupes et pré-remplissent ton classement · <button class="link" data-a="tab" data-v="profil">mes critères</button></div>
+  return `<h2>Noter les candidates</h2><div class="sub">${nDone}/31 notées. Note les critères que tu veux : chaque groupe de copines choisit les siens pour sa moyenne.</div>
   <div class="prog"><i style="width:${nDone/31*100}%"></i></div>
   <input class="field" id="q" placeholder="Chercher une région ou un prénom…" value="${esc(UI.q)}" style="margin-top:10px">
   <div class="seg" style="margin:8px 0 4px"><button data-a="filter" data-v="all" class="${UI.filter==="all"?"on":""}">Toutes</button><button data-a="filter" data-v="todo" class="${UI.filter==="todo"?"on":""}">À noter</button><button data-a="filter" data-v="done" class="${UI.filter==="done"?"on":""}">Notées</button></div>
@@ -667,8 +696,8 @@ function candCard(c,cr){
      <div class="links"><a href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener">Voir son Insta</a>${done(P,c.id)?`<button class="btn sm gold" data-a="next" data-v="${c.id}">Suivante →</button>`:""}</div></div>`:""}</div>`;
 }
 
-function groupNotesTop(ps){
-  return CANDS.map(c=>{const v=ps.map(p=>avg(p,c.id)).filter(x=>x!==null);return {id:c.id,s:v.length?v.reduce((a,b)=>a+b,0)/v.length:null,n:v.length};})
+function groupNotesTop(ps,ids){
+  return CANDS.map(c=>{const v=ps.map(p=>avg(p,c.id,ids)).filter(x=>x!==null);return {id:c.id,s:v.length?v.reduce((a,b)=>a+b,0)/v.length:null,n:v.length};})
     .filter(x=>x.s!==null).sort((a,b)=>b.s-a.s||BY[a.id].n-BY[b.id].n);
 }
 function vGroupes(){
@@ -678,22 +707,25 @@ function vGroupes(){
   else html+=`<div class="box">${LEAGUES.map(l=>`<button class="grp" data-a="league" data-v="${l.id}"><div class="av">${esc(l.name.slice(0,1).toUpperCase())}</div><div class="grow"><b>${esc(l.name)}</b><div class="det">${l.members} joueuse${l.members>1?"s":""} · code ${esc(l.code)}</div></div>${l.id===UI.league?`<span class="pill ok">ouvert</span>`:"›"}</button>`).join("")}</div>`;
   if(L){
     const ps=(LP[L.id]||[]).map(p=>p.id===P.id?P:p);
-    const gt=groupNotesTop(ps).slice(0,10);
+    const gids=(L.crits&&L.crits.length)?L.crits:ALLC; const gt=groupNotesTop(ps,gids).slice(0,10);
     const sc=ps.map(p=>({p,...scores(p)}));
     const board=(key)=>[...sc].sort((a,b)=>b[key]-a[key]||a.p.name.localeCompare(b.p.name)).map((x,i)=>`<div class="lb ${x.p.id===P.id?"mine":""}"><div class="av">${esc(x.p.emoji)}</div><div class="grow"><b>${esc(x.p.name)}</b></div><div class="tot">${x[key]}</div></div>`).join("");
     html+=`<h3>${esc(L.name)}</h3>
     <div class="box"><div class="det">Code du groupe</div><div class="bigcode">${esc(L.code)}</div>
       <button class="btn gold wide" data-a="share" data-v="${L.id}">Inviter des copines</button></div>
-    <div class="box"><h3>Le classement du groupe</h3><div class="det" style="margin-bottom:6px">Moyenne de vos notes</div>
+    <div class="box"><h3>Le classement du groupe</h3><div class="det" style="margin-bottom:8px">Moyenne de vos notes sur : ${gids.map(k=>CRITS.find(c=>c.id===k)?.label).filter(Boolean).join(", ")}. <button class="link" data-a="lcrits" data-v="${L.id}">Modifier</button></div>
       ${gt.length?gt.map((x,i)=>`<div class="rk p${i+1}"><div class="pos">${i+1}</div><div class="grow"><b>Miss ${BY[x.id].region}</b><div class="det">${BY[x.id].name} · ${x.n} avis</div></div><span class="val">${x.s.toFixed(1)}</span></div>`).join(""):`<div class="det">Personne n'a encore noté. Direction l'onglet Noter !</div>`}</div>
-    <div class="box"><h3>Les copines</h3>${ps.map(p=>`<div class="lb ${p.id===P.id?"mine":""}"><div class="av">${esc(p.emoji)}</div><div class="grow"><b>${esc(p.name)}</b><div class="det">${CANDS.filter(c=>done(p,c.id)).length}/31 notées${p.coeur?` · coup de cœur : Miss ${BY[p.coeur].region}`:""}${p.soulmate?` · sa Miss : ${BY[p.soulmate].region}`:""}${p.quiz_total?` · culture G ${String(qNote(p.quiz_score)).replace(".",",")}/20`:""}</div></div></div>`).join("")}</div>
+    <div class="box"><h3>Les copines</h3>${ps.map(p=>`<div class="lb ${p.id===P.id?"mine":""}"><div class="av">${esc(p.emoji)}</div><div class="grow"><b>${esc(p.name)}</b><div class="det">${CANDS.filter(c=>done(p,c.id,gids)).length}/31 notées${p.coeur?` · coup de cœur : Miss ${BY[p.coeur].region}`:""}${p.soulmate?` · sa Miss : ${BY[p.soulmate].region}`:""}${p.quiz_total?` · culture G ${String(qNote(p.quiz_score,p.quiz_total)).replace(".",",")}/20`:""}</div></div></div>`).join("")}</div>
     <div class="box"><h3>Reine du prono</h3>${board("tv")}</div>
     <div class="box"><h3>En phase avec la France</h3>${board("fr")}${!(R.manche>1||R.votes_locked)?`<div class="det" style="margin-top:6px">Les points tombent à la fin de chaque manche, le soir de l'élection.</div>`:""}</div>
     <div style="text-align:center"><button class="btn sm ghost danger" data-a="leave" data-v="${L.id}">Quitter ce groupe</button></div>`;
   }
   html+=`<div class="box"><h3>Créer un groupe</h3>
-    <form id="fcreate" class="row"><input class="field grow" id="lname" maxlength="30" placeholder="Nom (ex : Les Miss du canap')"><button class="btn gold">Créer</button></form>
-    <div class="det" style="margin-top:6px">Le code est créé automatiquement, il est unique.</div></div>
+    <form id="fcreate"><input class="field" id="lname" maxlength="30" placeholder="Nom (ex : Les Miss du canap')">
+    <div class="det" style="margin:12px 0 6px">Les critères de notes de votre groupe</div>
+    <div class="picks">${CRITS.map(c=>`<button type="button" class="pk ${(UI.newCrits||ALLC).includes(c.id)?"on":""}" data-a="ncrit" data-v="${c.id}">${c.label}</button>`).join("")}</div>
+    <button class="btn gold wide" style="margin-top:12px">Créer le groupe</button></form>
+    <div class="det" style="margin-top:6px">Le code est créé automatiquement, il est unique. Les critères se modifient à tout moment.</div></div>
   <div class="box"><h3>Rejoindre un groupe</h3>
     <form id="fjoin" class="row"><input class="field grow code" id="jcode" maxlength="12" placeholder="ROSE-1234" autocomplete="off"><button class="btn">Rejoindre</button></form></div>`;
   return html;
@@ -713,14 +745,9 @@ function vResultats(){
 }
 
 function vProfil(){
-  return `<h2>Mon profil</h2>
+  return `<button class="link" data-a="back" style="margin-top:10px">← Retour</button><h2>Mon profil</h2>
   <div class="box"><h3>Prénom & emoji</h3><form id="fname" class="row"><input class="field grow" id="pname" maxlength="20" value="${esc(P.name)}"><button class="btn">OK</button></form>
     <div class="emojis">${EMOJIS.map(e=>`<button data-a="emoji" data-v="${e}" class="${P.emoji===e?"on":""}">${e}</button>`).join("")}</div></div>
-  <div class="box"><h3>Mes critères de notes</h3>
-    <div class="seg"><button data-a="mode" data-v="detail" class="${P.mode!=="global"?"on":""}">Par critères</button><button data-a="mode" data-v="global" class="${P.mode==="global"?"on":""}">Note globale</button></div>
-    ${P.mode!=="global"?`<div style="margin-top:8px">${CRITS.map(c=>`<div class="toggle"><span>${c.label}</span><button class="sw ${(P.crits||[]).includes(c.id)?"on":""}" data-a="crit" data-v="${c.id}" aria-label="${c.label}"></button></div>`).join("")}</div>`
-      :`<div class="det" style="margin-top:10px">Une seule note sur 10 par candidate.</div>`}
-    <div class="det" style="margin-top:8px">Les notes servent pour tes groupes de copines et pour pré-remplir ton classement. Le grand jeu, lui, se joue sur ton classement.</div></div>
   <div class="box"><h3>Mon code perso</h3><div class="sub">Garde-le précieusement : il te permet de retrouver ton profil sur un autre téléphone.</div>
     <div class="bigcode">${UI.rcode?esc(UI.rcode):`<button class="btn sm" data-a="showcode">Afficher mon code</button>`}</div></div>
   <div style="text-align:center;margin:18px 0"><a class="link" href="/admin/" style="font-size:12px;color:var(--brume)">Espace admin</a></div>`;
@@ -729,41 +756,45 @@ function vProfil(){
 
 /* ===================== VUE QUIZ ===================== */
 const QKEY="lelue-quiz";
+const EXPRESS=(()=>{const per={};const out=[];QUIZ.forEach((q,i)=>{(per[q[0]]=per[q[0]]||[]).push(i);});
+  Object.values(per).forEach(a=>{out.push(a[0]);if(a.length>4)out.push(a[Math.floor(a.length/2)]);});return out.slice(0,15);})();
+const qList=q=>q&&q.mode==="express"?EXPRESS.map(i=>QUIZ[i]):QUIZ;
 function qState(){ if(!UI.qz){ try{UI.qz=JSON.parse(ls.get(QKEY))||null;}catch(e){} if(!UI.qz) UI.qz={i:0,ans:[],started:false,done:false,review:false}; } return UI.qz; }
 function qSave(){ ls.set(QKEY,JSON.stringify(UI.qz)); }
-const qCorrect=ans=>QUIZ.filter((q,i)=>ans[i]===q[3]).length;
-const qNote=c=>Math.round(c/QUIZ.length*200)/10;
+const qCorrect=(ans,L)=>(L||QUIZ).filter((q,i)=>ans[i]===q[3]).length;
+const qNote=(c,n)=>Math.round(c/(n||QUIZ.length)*200)/10;
 function vCulture(){
-  const q=qState();
+  const q=qState(); const L=qList(q);
   if(!q.started) {
-    const prev=P.quiz_total?qNote(P.quiz_score):null;
+    const prev=P.quiz_total?qNote(P.quiz_score,P.quiz_total):null;
     return `<button class="link" data-a="test" data-v="" style="margin-top:14px">← Tous les tests</button><h2>Le test de culture G des Miss</h2>
     <div class="box"><p style="margin-bottom:10px">Les 31 candidates ont passé leur test de culture générale pendant leur voyage à Saint-Martin. <b>Et toi, tu aurais eu combien ?</b></p>
     <div class="stat" style="margin:12px 0"><div><b>${QUIZ.length}</b>questions</div><div><b>/20</b>la note</div><div><b>${STATS?.quiz_avg??"–"}</b>moyenne France</div></div>
     <p class="det">Actualité, culture web, arts & mode, histoire, géographie, français, logique… Pas de chrono, prends ton temps. Ta note s'affiche dans tes groupes et compte pour la moyenne de la France.</p>
-    ${prev!==null?`<div class="note">Ta note : <b>${prev}/20</b>. Tu peux le refaire pour le fun, mais c'est ta première note qui compte.</div>`:""}
-    <button class="btn gold wide" style="margin-top:12px" data-a="qstart">${prev!==null?"Le refaire":"Commencer le test"}</button></div>`;
+    ${prev!==null?`<div class="note">Ta note : <b>${String(prev).replace(".",",")}/20</b>. Tu peux le refaire pour le fun, mais c'est ta première note à la version complète qui compte.</div>`:""}
+    <button class="cta" data-a="qstart" data-v="full"><b>Version complète</b><small>${QUIZ.length} questions, comme les Miss · compte pour la moyenne de la France</small></button>
+    <button class="cta" data-a="qstart" data-v="express" style="margin-top:10px"><b>Version express</b><small>${EXPRESS.length} questions, environ 10 minutes · pour le plaisir</small></button></div>`;
   }
   if(!q.done){
-    const it=QUIZ[q.i];
-    return `<div class="row" style="margin-top:14px"><span class="pill gold">${it[0]}</span><span class="det" style="margin-left:auto">Question ${q.i+1}/${QUIZ.length}</span></div>
-    <div class="prog"><i style="width:${q.i/QUIZ.length*100}%"></i></div>
+    const it=L[q.i];
+    return `<div class="row" style="margin-top:14px"><span class="pill gold">${it[0]}</span><span class="det" style="margin-left:auto">Question ${q.i+1}/${L.length}</span></div>
+    <div class="prog"><i style="width:${q.i/L.length*100}%"></i></div>
     <h2 style="font-size:22px;line-height:1.3;margin:16px 0 10px">${esc(it[1])}</h2>
     ${it[2].map((o,k)=>`<button class="qopt ${q.ans[q.i]===k?"on":""}" data-a="qans" data-v="${k}">${esc(o)}</button>`).join("")}
     <div class="row" style="justify-content:space-between;margin-top:10px">${q.i>0?`<button class="btn sm ghost" data-a="qprev">← Précédente</button>`:"<span></span>"}<button class="btn sm ghost" data-a="qquit">Abandonner</button></div>`;
   }
-  const c=qCorrect(q.ans), note=qNote(c);
-  const themes=[...new Set(QUIZ.map(x=>x[0]))].map(t=>{const idx=QUIZ.map((x,i)=>i).filter(i=>QUIZ[i][0]===t);return {t,ok:idx.filter(i=>q.ans[i]===QUIZ[i][3]).length,n:idx.length};});
-  const L=LEAGUES.find(l=>l.id===UI.league), mates=L?(LP[L.id]||[]).map(p=>p.id===P.id?P:p).filter(p=>p.quiz_total).map(p=>({p,n:qNote(p.quiz_score)})).sort((a,b)=>b.n-a.n):[];
+  const c=qCorrect(q.ans,L), note=qNote(c,L.length);
+  const themes=[...new Set(L.map(x=>x[0]))].map(t=>{const idx=L.map((x,i)=>i).filter(i=>L[i][0]===t);return {t,ok:idx.filter(i=>q.ans[i]===L[i][3]).length,n:idx.length};});
+  const LG=LEAGUES.find(l=>l.id===UI.league), mates=LG?(LP[LG.id]||[]).map(p=>p.id===P.id?P:p).filter(p=>p.quiz_total).map(p=>({p,n:qNote(p.quiz_score,p.quiz_total)})).sort((a,b)=>b.n-a.n):[];
   const avgF=STATS?.quiz_avg;
-  let html=`<h2>Ton résultat</h2>
+  let html=`<h2 class="goldtx">Ton résultat${q.mode==="express"?" · express":""}</h2>
   <div class="box" style="text-align:center"><div class="qnote">${String(note).replace(".",",")}<small>/20</small></div>
-    <div class="sub" style="margin-top:8px">${c} bonnes réponses sur ${QUIZ.length}${avgF!=null?` · moyenne de la France : <b style="color:var(--ivoire)">${String(avgF).replace(".",",")}/20</b>`:""}</div>
+    <div class="sub" style="margin-top:8px">${c} bonnes réponses sur ${L.length}${avgF!=null?` · moyenne de la France : <b style="color:var(--ivoire)">${String(avgF).replace(".",",")}/20</b>`:""}</div>
     <div class="sub">${note>=16?"Digne d'une Miss France !":note>=12?"Bravo, tu aurais fait bonne figure à Saint-Martin.":note>=8?"Pas mal ! Quelques révisions et c'est la couronne.":"L'important, c'est l'écharpe !"}</div>
     <button class="btn gold wide" data-a="qstory">Partager ma note en story</button></div>
   <div class="box"><h3>Par thème</h3>${themes.map(x=>`<div class="rk"><div class="grow">${x.t}</div><span class="val">${x.ok}/${x.n}</span></div>`).join("")}</div>`;
-  if(mates.length) html+=`<div class="box"><h3>${esc(L.name)}</h3>${mates.map((x,i)=>`<div class="lb ${x.p.id===P.id?"mine":""}"><div class="av">${esc(x.p.emoji)}</div><div class="grow"><b>${esc(x.p.name)}</b></div><div class="tot">${String(x.n).replace(".",",")}</div></div>`).join("")}</div>`;
-  html+=`<div class="box"><details ${q.review?"open":""}><summary>Voir les corrections</summary>${QUIZ.map((it,i)=>`<div style="margin-top:14px"><div class="det">${i+1}. ${it[0]}</div><b>${esc(it[1])}</b>
+  if(mates.length) html+=`<div class="box"><h3>${esc(LG.name)}</h3>${mates.map((x,i)=>`<div class="lb ${x.p.id===P.id?"mine":""}"><div class="av">${esc(x.p.emoji)}</div><div class="grow"><b>${esc(x.p.name)}</b></div><div class="tot">${String(x.n).replace(".",",")}</div></div>`).join("")}</div>`;
+  html+=`<div class="box"><details ${q.review?"open":""}><summary>Voir les corrections</summary>${L.map((it,i)=>`<div style="margin-top:14px"><div class="det">${i+1}. ${it[0]}</div><b>${esc(it[1])}</b>
     <div class="qopt good" style="padding:8px 12px">${esc(it[2][it[3]])}</div>${q.ans[i]!==it[3]?`<div class="qopt bad" style="padding:8px 12px">Ta réponse : ${q.ans[i]!=null?esc(it[2][q.ans[i]]):"—"}</div>`:""}<div class="det">${esc(it[4])}</div></div>`).join("")}</details></div>
   <button class="btn wide" data-a="qstart">Refaire le test</button>
   <p class="det" style="text-align:center;margin:22px 0 6px;opacity:.7">Curieuse ? Le test passé par les candidates a été publié dans la presse : <a href="${QUIZ_REAL_TEST}" target="_blank" rel="noopener">le voir ici</a>.</p>`;
@@ -777,7 +808,7 @@ function vQuiz(){
   const me=P.soulmate&&BY[P.soulmate];
   return `<h2 class="goldtx">En attendant le grand soir</h2><div class="sub">Deux tests pour patienter jusqu'au 12 décembre.</div>
   <button class="testcard" data-a="test" data-v="perso"><b class="goldtx">Quelle Miss es-tu ?</b><span>10 questions façon magazine${me?` · ta Miss : Miss ${me.region}`:""}</span></button>
-  <button class="testcard" data-a="test" data-v="culture"><b class="goldtx">Le test de culture G des Miss</b><span>${QUIZ.length} questions · ${P.quiz_total?`ta note : ${String(qNote(P.quiz_score)).replace(".",",")}/20`:"ta note sur 20"}</span></button>`;
+  <button class="testcard" data-a="test" data-v="culture"><b class="goldtx">Le test de culture G des Miss</b><span>${QUIZ.length} questions · ${P.quiz_total?`ta note : ${String(qNote(P.quiz_score,P.quiz_total)).replace(".",",")}/20`:"version complète ou express"}</span></button>`;
 }
 const PKEY="lelue-perso";
 function pState(){ if(!UI.ps){ try{UI.ps=JSON.parse(ls.get(PKEY))||null;}catch(e){} if(!UI.ps) UI.ps={i:0,ans:[],started:false,done:false}; } return UI.ps; }
@@ -789,9 +820,11 @@ function vPerso(){
   if(!q.done){ const it=PERSO_Q[q.i];
     return `<div class="row" style="margin-top:14px"><span class="pill gold">Quelle Miss es-tu ?</span><span class="det" style="margin-left:auto">${q.i+1}/${PERSO_Q.length}</span></div>
     <div class="prog"><i style="width:${q.i/PERSO_Q.length*100}%"></i></div>
-    <h2 style="font-size:24px;line-height:1.3;margin:16px 0 10px">${esc(it[0])}</h2>
-    ${it[1].map((o,k)=>`<button class="qopt ${q.ans[q.i]===k?"on":""}" data-a="pans" data-v="${k}"><b style="color:var(--or);margin-right:8px">${"ABCDE"[k]}</b>${esc(o[0])}</button>`).join("")}
-    ${q.i>0?`<button class="btn sm ghost" data-a="pprev" style="margin-top:10px">← Précédente</button>`:""}`; }
+    <h2 style="font-size:26px;line-height:1.3;margin:16px 0 10px">${esc(it[0])}</h2>
+    <div class="det" style="margin:-4px 0 6px">Plusieurs réponses possibles</div>
+    ${it[1].map((o,k)=>`<button class="qopt ${(q.ans[q.i]||[]).includes(k)?"on":""}" data-a="pans" data-v="${k}"><b style="color:var(--or);margin-right:8px">${"ABCDE"[k]}</b>${esc(o[0])}</button>`).join("")}
+    <button class="cta" data-a="pnext" ${(q.ans[q.i]||[]).length?"":"disabled"} style="padding:16px"><b style="font-size:21px">${q.i<PERSO_Q.length-1?"Question suivante":"Découvrir ma Miss"}</b></button>
+    ${q.i>0?`<button class="btn sm ghost" data-a="pprev">← Précédente</button>`:""}`; }
   const r=persoResult(q.ans), c=BY[r.id], txt=PERSO[r.id][1], isMine=P.soulmate===r.id;
   return back+`<div class="box" style="text-align:center;margin-top:12px"><div class="det" style="text-transform:uppercase;letter-spacing:2px">Tu es…</div>
     <div class="logo" style="font-size:40px;margin:8px 0;line-height:1.1">Miss ${c.region}</div><div class="sub">${c.name}</div>
@@ -940,6 +973,9 @@ async function makeQuizStory(note){
   return new Promise(res=>cv.toBlob(b=>res({blob:b,url:cv.toDataURL("image/png")}),"image/png"));
 }
 /* ===================== ACTIONS ===================== */
+function showCritsModal(){ modal(`<h3>Les critères du groupe</h3><div class="det" style="margin-bottom:10px">La moyenne du groupe ne prendra en compte que ces critères.</div>
+  <div class="picks">${CRITS.map(c=>`<button class="pk ${UI.editCrits.includes(c.id)?"on":""}" data-a="ecrit" data-v="${c.id}">${c.label}</button>`).join("")}</div>
+  <div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn sm" data-a="closemodal">Annuler</button><button class="btn sm gold" data-a="ecsave">Enregistrer</button></div>`); }
 function modal(html){document.getElementById("overlay").innerHTML=`<div class="modal" data-a="closemodal"><div class="box">${html}</div></div>`;}
 function closeModal(){document.getElementById("overlay").innerHTML="";}
 function confirmBox(text,ok){modal(`<p style="margin-bottom:14px">${text}</p><div class="row" style="justify-content:flex-end"><button class="btn sm" data-a="closemodal">Annuler</button><button class="btn sm gold" id="cyes">Confirmer</button></div>`);document.getElementById("cyes").onclick=()=>{closeModal();ok();};}
@@ -958,7 +994,7 @@ document.addEventListener("click",async e=>{
     case "closemodal": if(e.target===b||b.tagName==="BUTTON") closeModal(); return;
     case "welcome": UI.welcome=v; break;
     case "wemoji": UI.emoji=v; document.querySelectorAll("[data-a=wemoji]").forEach(x=>x.classList.toggle("on",x.dataset.v===v)); return;
-    case "tab": UI.tab=v; window.scrollTo(0,0); if(v==="resultats"||v==="jouer") refreshShared().then(()=>render(true)); if(v==="groupes"&&UI.league) loadLeague(UI.league).then(()=>render(true)); break;
+    case "tab": if(v==="profil"&&UI.tab!=="profil") UI.prevTab=UI.tab; UI.tab=v; window.scrollTo(0,0); if(v==="resultats"||v==="jouer") refreshShared().then(()=>render(true)); if(v==="groupes"&&UI.league) loadLeague(UI.league).then(()=>render(true)); break;
     case "filter": UI.filter=v; break;
     case "open": UI.open=UI.open===v?null:v; break;
     case "note": { const notes=JSON.parse(JSON.stringify(P.notes||{})); const n=notes[b.dataset.c]||(notes[b.dataset.c]={}); const val=+v;
@@ -968,18 +1004,24 @@ document.addEventListener("click",async e=>{
     case "coeur": patch({coeur:P.coeur===v?null:v}); if(P.coeur) toast(`Coup de cœur : Miss ${BY[v].region}`); break;
     case "test": UI.test=v||null; window.scrollTo(0,0); break;
     case "pstart": UI.ps={i:0,ans:[],started:true,done:false}; pSave(); window.scrollTo(0,0); break;
-    case "pans": { const q=pState(); q.ans[q.i]=+v; if(q.i<PERSO_Q.length-1) q.i++; else q.done=true; pSave(); window.scrollTo(0,0); break; }
+    case "pans": { const q=pState(); let sel=Array.isArray(q.ans[q.i])?q.ans[q.i]:[]; const k=+v; sel=sel.includes(k)?sel.filter(x=>x!==k):[...sel,k]; q.ans[q.i]=sel; pSave(); break; }
+    case "pnext": { const q=pState(); if(!(q.ans[q.i]||[]).length) return; if(q.i<PERSO_Q.length-1) q.i++; else q.done=true; pSave(); window.scrollTo(0,0); break; }
     case "pprev": { const q=pState(); if(q.i>0) q.i--; pSave(); break; }
     case "psoul": patch({soulmate:v}); toast(`Miss ${BY[v].region} est ta Miss de cœur`); break;
     case "pstory": showStory(await makePersoStory(v)); return;
-    case "qstart": UI.qz={i:0,ans:[],started:true,done:false}; qSave(); window.scrollTo(0,0); break;
-    case "qans": { const q=qState(); q.ans[q.i]=+v; if(q.i<QUIZ.length-1) q.i++; else { q.done=true; const c=qCorrect(q.ans);
-        if(!P.quiz_total){ patch({quiz_score:c,quiz_total:QUIZ.length}); refreshShared().then(()=>render(true)); } }
+    case "qstart": UI.qz={i:0,ans:[],started:!!v,done:false,mode:v==="express"?"express":"full"}; qSave(); window.scrollTo(0,0); break;
+    case "qans": { const q=qState(); const L=qList(q); q.ans[q.i]=+v; if(q.i<L.length-1) q.i++; else { q.done=true; const c=qCorrect(q.ans,L);
+        if(!P.quiz_total&&q.mode!=="express"){ patch({quiz_score:c,quiz_total:L.length}); refreshShared().then(()=>render(true)); } }
       qSave(); window.scrollTo(0,0); break; }
     case "qprev": { const q=qState(); if(q.i>0) q.i--; qSave(); break; }
     case "qquit": confirmBox("Abandonner le test ? Tes réponses seront perdues.",()=>{UI.qz={i:0,ans:[],started:false,done:false};qSave();render();}); return;
-    case "qstory": { const q=qState(); const s=await makeQuizStory(qNote(qCorrect(q.ans))); showStory(s); return; }
+    case "qstory": { const q=qState(); const L=qList(q); const s=await makeQuizStory(qNote(qCorrect(q.ans,L),L.length)); showStory(s); return; }
     case "goto-rank": { const t=document.getElementById("rank-title"); t&&t.scrollIntoView({behavior:"smooth",block:"start"}); return; }
+    case "ncrit": { const c=new Set(UI.newCrits||ALLC); c.has(v)?c.delete(v):c.add(v); UI.newCrits=[...c]; break; }
+    case "lcrits": { const L=LEAGUES.find(x=>x.id===v); UI.editCrits=[...((L.crits&&L.crits.length)?L.crits:ALLC)]; UI.editLeague=v; showCritsModal(); return; }
+    case "ecrit": { const c=new Set(UI.editCrits); c.has(v)?c.delete(v):c.add(v); UI.editCrits=[...c]; showCritsModal(); return; }
+    case "ecsave": { if(!UI.editCrits.length){toast("Choisis au moins un critère",true);return;} try{await API.setLeagueCrits(UI.editLeague,UI.editCrits);closeModal();await refreshLeagues();toast("Critères du groupe enregistrés");}catch(err){toast(errMsg(err),true);} break; }
+    case "back": UI.tab=UI.prevTab||"jouer"; window.scrollTo(0,0); break;
     case "sendr1": saveRound(1,roundOf(P,1)); toast("Classement envoyé !"); break;
     case "resort": confirmBox("Re-trier ton classement d'après tes notes ? Tes déplacements à la main seront remplacés.",()=>{saveRound(1,notesOrder(P));render();}); return;
     case "moveto": { if(!isOpen()) return; const n=R.manche, order=roundOf(P,n), i=order.indexOf(v);
@@ -1027,7 +1069,7 @@ document.addEventListener("submit",async e=>{
       await refreshLeagues(); if(pendingJoin) await doJoin(pendingJoin); toast(`Bienvenue ${P.name} ${P.emoji}`); render(); }
     if(id==="frecover"){ const code=document.getElementById("rcode").value.trim(); if(!code) return;
       if(!await API.session()) await API.signIn(); await API.recover(code); P=await API.myProfile(); await refreshLeagues(); toast(`Re-bonjour ${P.name} ${P.emoji}`); render(); }
-    if(id==="fcreate"){ const l=await API.createLeague(document.getElementById("lname").value.trim()); UI.league=l.id; ls.set("cp-league",l.id); await refreshLeagues(); render(); toast(`Groupe créé : ${l.code}`); }
+    if(id==="fcreate"){ const cr=UI.newCrits||ALLC; if(!cr.length){toast("Choisis au moins un critère");return;} const l=await API.createLeague(document.getElementById("lname").value.trim(),cr); UI.newCrits=null; UI.league=l.id; ls.set("cp-league",l.id); await refreshLeagues(); render(); toast(`Groupe créé : ${l.code}`); }
     if(id==="fjoin"){ const code=document.getElementById("jcode").value.trim(); if(code){await doJoin(code); render();} }
     if(id==="fname"){ const name=document.getElementById("pname").value.trim(); if(name){patch({name}); toast("Prénom modifié"); render();} }
     if(id==="fmove"){ const v=document.getElementById("mid").value, n=R.manche, order=roundOf(P,n).filter(x=>x!==v);
