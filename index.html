@@ -426,7 +426,7 @@ function makeApi(){
     async createLeague(name,crits){ return ok(await sb.rpc("create_league",{p_name:name,p_crits:crits})); },
     async setLeagueCrits(id,crits){ return ok(await sb.rpc("set_league_crits",{p_league:id,p_crits:crits})); },
     async joinLeague(code){ return ok(await sb.rpc("join_league",{p_code:code})); },
-    async leaveLeague(leagueId,profileId){ return ok(await sb.from("league_members").delete().eq("league_id",leagueId).eq("profile_id",profileId)); },
+    async leaveLeague(leagueId){ return ok(await sb.rpc("leave_league",{p_league:leagueId})); },
     async myLeagues(){ return ok(await sb.rpc("my_leagues"))||[]; },
     async leagueProfiles(id){ return ok(await sb.rpc("league_profiles",{p_league:id}))||[]; },
     async stats(){ return ok(await sb.rpc("france_stats")); },
@@ -661,7 +661,7 @@ function vTestCards(){
 }
 function vFranceFull(n,title){
   const f=frRef(n); if(!f||!f.length) return "";
-  const k=MANCHES[n].k, mine=roundOf(P,n), row=(id,i)=>`<div class="rk ${i<3?"p"+(i+1):""}"><div class="pos">${i+1}</div><div class="grow"><b>Miss ${BY[id].region}</b><div class="det">${BY[id].name}</div></div>${(n===3?mine[i]===id:mine.slice(0,k).includes(id)&&i<k)?`<span class="mk">comme toi</span>`:""}</div>`;
+  const k=MANCHES[n].k, mine=roundOf(P,n), row=(id,i)=>`<div class="rk ${i<3?"p"+(i+1):""}"><div class="pos">${i+1}</div><div class="grow"><b>Miss ${BY[id].region}</b><div class="det">${BY[id].name}</div></div>${n===3?(mine[i]===id?`<span class="mk">même rang que toi</span>`:""):(mine.slice(0,k).includes(id)?`<span class="mk">dans ton top ${k}</span>`:"")}</div>`;
   const head=f.slice(0,k).map(row).join(""), rest=f.slice(k).map((id,j)=>row(id,j+k)).join("");
   return `<div class="box"><h3>${title||`Le classement de la France · manche ${n}`}</h3>${head}
     ${rest?((UI.frMore||{})[n]?rest+`<button class="link" data-a="frmore" data-v="${n}" style="margin-top:10px">Voir moins</button>`:`<button class="link" data-a="frmore" data-v="${n}" style="margin-top:10px">Voir plus (jusqu'à la ${f.length}e)</button>`):""}
