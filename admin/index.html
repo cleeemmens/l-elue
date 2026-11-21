@@ -665,7 +665,7 @@ function vFranceFull(n,title){
   const k=MANCHES[n].k, mine=roundOf(P,n), row=(id,i)=>`<div class="rk ${i<3?"p"+(i+1):""}"><div class="pos">${i+1}</div><div class="grow"><b>Miss ${BY[id].region}</b><div class="det">${BY[id].name}</div></div>${(n===3?mine[i]===id:mine.slice(0,k).includes(id)&&i<k)?`<span class="mk">comme toi</span>`:""}</div>`;
   const head=f.slice(0,k).map(row).join(""), rest=f.slice(k).map((id,j)=>row(id,j+k)).join("");
   return `<div class="box"><h3>${title||`Le classement de la France · manche ${n}`}</h3>${head}
-    ${rest?`<details style="margin-top:8px"><summary style="font-size:16px">Voir les ${f.length-k} suivantes</summary>${rest}</details>`:""}
+    ${rest?((UI.frMore||{})[n]?rest+`<button class="link" data-a="frmore" data-v="${n}" style="margin-top:10px">Voir moins</button>`:`<button class="link" data-a="frmore" data-v="${n}" style="margin-top:10px">Voir plus (jusqu'à la ${f.length}e)</button>`):""}
     <div class="det" style="margin-top:8px">D'après ${FR[n].voters} classement${FR[n].voters>1?"s":""}.</div></div>`;
 }
 function vJouer(){
@@ -1048,6 +1048,7 @@ document.addEventListener("click",async e=>{
     case "ecrit": { const c=new Set(UI.editCrits); c.has(v)?c.delete(v):c.add(v); UI.editCrits=[...c]; showCritsModal(); return; }
     case "ecsave": { if(!UI.editCrits.length){toast("Choisis au moins un critère",true);return;} try{await API.setLeagueCrits(UI.editLeague,UI.editCrits);closeModal();await refreshLeagues();toast("Critères du groupe enregistrés");}catch(err){toast(errMsg(err),true);} break; }
     case "back": UI.tab=UI.prevTab||"jouer"; window.scrollTo(0,0); break;
+    case "frmore": UI.frMore=UI.frMore||{}; UI.frMore[v]=!UI.frMore[v]; break;
     case "sendr1": saveRound(1,roundOf(P,1)); toast("Classement envoyé !"); break;
     case "resort": confirmBox("Re-trier ton classement d'après tes notes ? Tes déplacements à la main seront remplacés.",()=>{saveRound(1,notesOrder(P));render();}); return;
     case "moveto": { if(!isOpen()) return; const n=R.manche, order=roundOf(P,n), i=order.indexOf(v);
