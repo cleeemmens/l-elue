@@ -202,6 +202,10 @@ details[open] summary::after{content:"–"}
 .qopt.good{border-color:var(--ok);background:rgba(159,227,191,.08)} .qopt.bad{border-color:var(--bad);background:rgba(255,154,154,.07)}
 .qnote{font:500 76px/1 "Bodoni Moda",serif;text-align:center}
 .qnote small{font-size:28px;color:var(--brume)}
+.how .step{display:flex;gap:12px;align-items:flex-start;padding:8px 0}
+.how .step span{flex:0 0 auto;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:700 15px "Bodoni Moda",serif;color:#2A1606;background:linear-gradient(135deg,#C8932F,#F6DC92 50%,#D9A84A)}
+.how .step b{font-weight:500}
+.how .step div{font-size:14.5px;color:#E9DCEB}
 .testcard{display:block;width:100%;text-align:center;padding:24px 18px;border-radius:20px;background:var(--card);border:1px solid rgba(233,191,98,.3);margin:12px 0}
 .testcard b{display:block;font:italic 700 25px/1.2 "Bodoni Moda",serif;padding-top:3px}
 .testcard span{display:block;font-size:14px;color:var(--brume);margin-top:6px}
@@ -589,7 +593,7 @@ function tick(){
 }
 
 /* ===================== VUES ===================== */
-const TABS=[["jouer","Jouer"],["noter","Noter"],["quiz","Tests"],["groupes","Groupes"],["resultats","Résultats"]];
+const TABS=[["jouer","Jouer"],["noter","Noter"],["groupes","Groupes"],["resultats","Résultats"]];
 function render(soft){
   if(DRAG) return;
   const app=document.getElementById("app"), nav=document.getElementById("navbar");
@@ -597,7 +601,7 @@ function render(soft){
   if(!P){nav.style.display="none";app.innerHTML=vWelcome();placeBulbs();beams();return;}
   if(soft&&document.activeElement&&document.activeElement.tagName==="INPUT") return;
   nav.style.display="";
-  document.getElementById("nav").innerHTML=TABS.map(t=>`<button data-a="tab" data-v="${t[0]}" class="${UI.tab===t[0]?"on":""}">${ICONS[t[0]]}${t[1]}</button>`).join("");
+  document.getElementById("nav").innerHTML=TABS.map(t=>`<button data-a="tab" data-v="${t[0]}" class="${(UI.tab===t[0]||(UI.tab==="quiz"&&t[0]==="jouer"))?"on":""}">${ICONS[t[0]]}${t[1]}</button>`).join("");
   const head=`<header><div class="brand"><img src="/icons/diademe.webp" alt=""><div class="logo shine">L'Élue</div></div>
     <button class="me" data-a="tab" data-v="profil"><span class="av">${esc(P.emoji)}</span>${esc(P.name)}<span class="sync" id="sync">${UI.syncing?"…":"✓"}</span></button></header>`;
   const views={jouer:vJouer,noter:vNoter,quiz:vQuiz,groupes:vGroupes,resultats:vResultats,profil:vProfil};
@@ -629,15 +633,11 @@ function vSteps(){
     const lab=n<R.manche?"terminée":n===R.manche?(R.votes_locked?"fermée":"en cours"):"à venir";
     return `<div class="${st}"><b>${MANCHES[n].short}</b>${lab}</div>`}).join("")}</div>`;
 }
-function vRules(){
-  return `<details class="box"><summary>Comment gagner des points</summary>
-  <p class="det" style="margin:10px 0">Un seul classement, deux façons de marquer. Le classement de la France reste secret jusqu'à la fin de chaque manche.</p>
-  <table class="rules"><tr><th>Manche</th><th>Si la télé te donne raison</th><th>Si la France pense comme toi</th></tr>
+function vRulesTable(){ return `<table class="rules"><tr><th>Manche</th><th>Si la télé te donne raison</th><th>Si la France pense comme toi</th></tr>
   <tr><td><b>Top 15</b><br><span class="det">avant l'annonce du top 15</span></td><td><b>1 pt</b> par candidate de ton top 15 qualifiée</td><td><b>1 pt</b> par candidate en commun avec le top 15 de la France</td></tr>
   <tr><td><b>Top 5</b><br><span class="det">avant l'annonce du top 5</span></td><td><b>3 pts</b> par finaliste trouvée</td><td><b>3 pts</b> par candidate en commun avec le top 5 de la France</td></tr>
-  <tr><td><b>Couronne</b><br><span class="det">avant le verdict</span></td><td><b>10 pts</b> pour Miss France, <b>+3</b> par dauphine au bon rang</td><td><b>10 pts</b> si ta n°1 est celle de la France, <b>+3</b> par rang identique</td></tr></table>
-  <p class="det" style="margin-top:10px">Deux classements : <b style="color:var(--ivoire)">Reine du prono</b> (points télé) et <b style="color:var(--ivoire)">En phase avec la France</b>.</p></details>`;
-}
+  <tr><td><b>Couronne</b><br><span class="det">avant le verdict</span></td><td><b>10 pts</b> pour Miss France, <b>+3</b> par dauphine au bon rang</td><td><b>10 pts</b> si ta n°1 est celle de la France, <b>+3</b> par rang identique</td></tr></table>`; }
+function vRules(){ return (R.manche===1&&!R.votes_locked)?"":`<details class="box"><summary>Comment gagner des points</summary>${vRulesTable()}</details>`; }
 function vMyPoints(){
   const s=scores(P);
   return `<div class="stat"><div><b>${s.tv}</b>Reine du prono</div><div><b>${s.fr}</b>En phase avec la France</div></div>`;
@@ -647,10 +647,25 @@ function rankItem(id,i,k,extra){
   return `<li data-id="${id}" class="${i<k?"in":""}"><button class="pos" data-a="moveto" data-v="${id}" title="Déplacer">${i+1}</button>
     <div class="grow"><b>Miss ${c.region}</b>${P.soulmate===id?' <img class="tiny" src="/icons/diademe.webp" alt="Ta Miss de cœur">':""}<div class="det">${c.name}</div></div>${extra||""}<span class="handle" aria-label="Glisser">${GRIP}</span></li>`;
 }
+function vHowTo(){
+  return `<div class="box how"><h3>Comment ça marche</h3>
+   <div class="step"><span>1</span><div><b>Note les candidates</b> (onglet Noter, facultatif). Tes notes pré-remplissent ton classement et servent pour tes groupes de copines.</div></div>
+   <div class="step"><span>2</span><div><b>Fais ton classement</b> en faisant glisser les Miss. Le soir de l'élection, il y a 3 manches : le top 15, le top 5, puis la couronne.</div></div>
+   <div class="step"><span>3</span><div><b>Gagne des points</b> quand la télé te donne raison (<i>Reine du prono</i>) et quand la France pense comme toi (<i>En phase avec la France</i>). Le choix de la France reste secret jusqu'à la fin de chaque manche.</div></div>
+   <details style="margin-top:10px"><summary style="font-size:16px">Le détail des points</summary>${vRulesTable()}</details></div>`;
+}
+function vTestCards(){
+  const me=P.soulmate&&BY[P.soulmate];
+  return `<h2 class="goldtx">En attendant le grand soir</h2>
+  <button class="testcard" data-a="opentest" data-v="perso"><b class="goldtx">Quelle Miss es-tu ?</b><span>10 questions façon magazine${me?` · ta Miss : Miss ${me.region}`:""}</span></button>
+  <button class="testcard" data-a="opentest" data-v="culture"><b class="goldtx">Le test de culture G des Miss</b><span>Mini test de 20 minutes ou test complet${P.quiz_total?` · ta note : ${String(qNote(P.quiz_score,P.quiz_total)).replace(".",",")}/20`:""}</span></button>`;
+}
 function vJouer(){
   const n=Math.min(R.manche,3), M=MANCHES[n];
   const hi=P?`Bonsoir ${esc(P.name)}`:"";
-  let html=vHero(hi)+(isOpen()?`<button class="cta" data-a="goto-rank"><b>${n===1?"Faire mon top 15":n===2?"Faire mon top 5":"Choisir ma Miss France"}</b><small>${n===1?"Ouvert jusqu'à l'annonce des qualifiées":n===2?"Ouvert jusqu'à l'annonce du top 5":"Ouvert jusqu'au verdict"}</small></button>`:"")+vSteps();
+  const howto=(R.manche===1&&!R.votes_locked)?vHowTo():"";
+  const tests=(R.manche===1&&!R.votes_locked)?vTestCards():"";
+  let html=vHero(hi)+howto+(isOpen()?`<button class="cta" data-a="goto-rank"><b>${n===1?"Faire mon top 15":n===2?"Faire mon top 5":"Choisir ma Miss France"}</b><small>${n===1?"Ouvert jusqu'à l'annonce des qualifiées":n===2?"Ouvert jusqu'à l'annonce du top 5":"Ouvert jusqu'au verdict"}</small></button>`:"")+tests+vSteps();
   if(R.manche>3){ html+=`<div class="box"><h3>Tes points</h3>${vMyPoints()}</div><button class="btn wide" data-a="tab" data-v="resultats">Voir tous les résultats</button>`; return html+vRules(); }
   const order=roundOf(P,n);
   if(isOpen()){
@@ -758,7 +773,8 @@ function vProfil(){
 /* ===================== VUE QUIZ ===================== */
 const QKEY="lelue-quiz";
 const EXPRESS=(()=>{const per={};const out=[];QUIZ.forEach((q,i)=>{(per[q[0]]=per[q[0]]||[]).push(i);});
-  Object.values(per).forEach(a=>{out.push(a[0]);if(a.length>4)out.push(a[Math.floor(a.length/2)]);});return out.slice(0,15);})();
+  const keys=Object.keys(per);let r=0;while(out.length<25){let added=false;keys.forEach(k=>{if(out.length<25&&per[k][r]!==undefined){out.push(per[k][r]);added=true;}});if(!added)break;r++;}
+  return out;})();
 const qList=q=>q&&q.mode==="express"?EXPRESS.map(i=>QUIZ[i]):QUIZ;
 function qState(){ if(!UI.qz){ try{UI.qz=JSON.parse(ls.get(QKEY))||null;}catch(e){} if(!UI.qz) UI.qz={i:0,ans:[],started:false,done:false,review:false}; } return UI.qz; }
 function qSave(){ ls.set(QKEY,JSON.stringify(UI.qz)); }
@@ -768,13 +784,13 @@ function vCulture(){
   const q=qState(); const L=qList(q);
   if(!q.started) {
     const prev=P.quiz_total?qNote(P.quiz_score,P.quiz_total):null;
-    return `<button class="link" data-a="test" data-v="" style="margin-top:14px">← Tous les tests</button><h2>Le test de culture G des Miss</h2>
+    return `<button class="link" data-a="test" data-v="" style="margin-top:14px">← Retour</button><h2>Le test de culture G des Miss</h2>
     <div class="box"><p style="margin-bottom:10px">Les 31 candidates ont passé leur test de culture générale pendant leur voyage à Saint-Martin. <b>Et toi, tu aurais eu combien ?</b></p>
     <div class="stat" style="margin:12px 0"><div><b>${QUIZ.length}</b>questions</div><div><b>/20</b>la note</div><div><b>${STATS?.quiz_avg??"–"}</b>moyenne France</div></div>
     <p class="det">Actualité, culture web, arts & mode, histoire, géographie, français, logique… Pas de chrono, prends ton temps. Ta note s'affiche dans tes groupes et compte pour la moyenne de la France.</p>
     ${prev!==null?`<div class="note">Ta note : <b>${String(prev).replace(".",",")}/20</b>. Tu peux le refaire pour le fun, mais c'est ta première note à la version complète qui compte.</div>`:""}
-    <button class="cta" data-a="qstart" data-v="full"><b>Version complète</b><small>${QUIZ.length} questions, comme les Miss · compte pour la moyenne de la France</small></button>
-    <button class="cta" data-a="qstart" data-v="express" style="margin-top:10px"><b>Version express</b><small>${EXPRESS.length} questions, environ 10 minutes · pour le plaisir</small></button></div>`;
+    <button class="cta" data-a="qstart" data-v="express"><b>Le mini test · 20 minutes</b><small>${EXPRESS.length} questions, toutes les catégories</small></button>
+    <button class="cta" data-a="qstart" data-v="full" style="margin-top:10px"><b>Le test complet</b><small>${QUIZ.length} questions, comme les Miss · compte pour la moyenne de la France</small></button></div>`;
   }
   if(!q.done){
     const it=L[q.i];
@@ -788,7 +804,7 @@ function vCulture(){
   const themes=[...new Set(L.map(x=>x[0]))].map(t=>{const idx=L.map((x,i)=>i).filter(i=>L[i][0]===t);return {t,ok:idx.filter(i=>q.ans[i]===L[i][3]).length,n:idx.length};});
   const LG=LEAGUES.find(l=>l.id===UI.league), mates=LG?(LP[LG.id]||[]).map(p=>p.id===P.id?P:p).filter(p=>p.quiz_total).map(p=>({p,n:qNote(p.quiz_score,p.quiz_total)})).sort((a,b)=>b.n-a.n):[];
   const avgF=STATS?.quiz_avg;
-  let html=`<h2 class="goldtx">Ton résultat${q.mode==="express"?" · express":""}</h2>
+  let html=`<h2 class="goldtx">Ton résultat${q.mode==="express"?" · mini test":""}</h2>
   <div class="box" style="text-align:center"><div class="qnote">${String(note).replace(".",",")}<small>/20</small></div>
     <div class="sub" style="margin-top:8px">${c} bonnes réponses sur ${L.length}${avgF!=null?` · moyenne de la France : <b style="color:var(--ivoire)">${String(avgF).replace(".",",")}/20</b>`:""}</div>
     <div class="sub">${note>=16?"Digne d'une Miss France !":note>=12?"Bravo, tu aurais fait bonne figure à Saint-Martin.":note>=8?"Pas mal ! Quelques révisions et c'est la couronne.":"L'important, c'est l'écharpe !"}</div>
@@ -806,6 +822,7 @@ function vCulture(){
 function vQuiz(){
   if(UI.test==="culture") return vCulture();
   if(UI.test==="perso") return vPerso();
+  UI.tab="jouer"; return vJouer();
   const me=P.soulmate&&BY[P.soulmate];
   return `<h2 class="goldtx">En attendant le grand soir</h2><div class="sub">Deux tests pour patienter jusqu'au 12 décembre.</div>
   <button class="testcard" data-a="test" data-v="perso"><b class="goldtx">Quelle Miss es-tu ?</b><span>10 questions façon magazine${me?` · ta Miss : Miss ${me.region}`:""}</span></button>
@@ -815,7 +832,7 @@ const PKEY="lelue-perso";
 function pState(){ if(!UI.ps){ try{UI.ps=JSON.parse(ls.get(PKEY))||null;}catch(e){} if(!UI.ps) UI.ps={i:0,ans:[],started:false,done:false}; } return UI.ps; }
 function pSave(){ ls.set(PKEY,JSON.stringify(UI.ps)); }
 function vPerso(){
-  const q=pState(), back=`<button class="link" data-a="test" data-v="" style="margin-top:14px">← Tous les tests</button>`;
+  const q=pState(), back=`<button class="link" data-a="test" data-v="" style="margin-top:14px">← Retour</button>`;
   if(!q.started) return back+`<h2>Quelle Miss es-tu ?</h2><div class="box"><p style="margin-bottom:10px">Sportive, solaire, aventurière ou cœur tendre ? Réponds à 10 questions et découvre laquelle des 31 candidates te ressemble le plus.</p>
     <p class="det">Réponds spontanément, il n'y a pas de bonne réponse !</p><button class="btn gold wide" style="margin-top:12px" data-a="pstart">Je fais le test</button></div>`;
   if(!q.done){ const it=PERSO_Q[q.i];
@@ -1003,7 +1020,8 @@ document.addEventListener("click",async e=>{
     case "next": { const i=CANDS.findIndex(c=>c.id===v); const nx=CANDS.slice(i+1).concat(CANDS.slice(0,i)).find(c=>!done(P,c.id)); UI.open=nx?nx.id:null; if(!nx) toast("Toutes notées !");
       setTimeout(()=>{const el=document.querySelector(".cand.open"); el&&el.scrollIntoView({behavior:"smooth",block:"start"});},30); break; }
     case "coeur": patch({coeur:P.coeur===v?null:v}); if(P.coeur) toast(`Coup de cœur : Miss ${BY[v].region}`); break;
-    case "test": UI.test=v||null; window.scrollTo(0,0); break;
+    case "test": UI.test=v||null; if(!v) UI.tab="jouer"; window.scrollTo(0,0); break;
+    case "opentest": UI.test=v; UI.tab="quiz"; window.scrollTo(0,0); break;
     case "pstart": UI.ps={i:0,ans:[],started:true,done:false}; pSave(); window.scrollTo(0,0); break;
     case "pans": { const q=pState(); let sel=Array.isArray(q.ans[q.i])?q.ans[q.i]:[]; const k=+v; sel=sel.includes(k)?sel.filter(x=>x!==k):[...sel,k]; q.ans[q.i]=sel; pSave(); break; }
     case "pnext": { const q=pState(); if(!(q.ans[q.i]||[]).length) return; if(q.i<PERSO_Q.length-1) q.i++; else q.done=true; pSave(); window.scrollTo(0,0); break; }
