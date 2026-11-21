@@ -23,6 +23,7 @@ html{background:var(--nuit)}
 body{color:var(--ivoire);font-family:"Jost",system-ui,sans-serif;font-weight:300;font-size:16px;line-height:1.45;min-height:100vh;padding-bottom:96px;background:var(--nuit)}
 body.dragging{user-select:none;-webkit-user-select:none}
 #bg{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(120% 60% at 50% 0%,#4A2157 0%,#2A1434 40%,#1B0E22 78%)}
+#bg .beams{position:absolute;inset:0;opacity:0;transition:opacity .6s}
 #bg .beam{position:absolute;top:-40px;width:190px;height:620px;transform-origin:50% 0;filter:blur(10px);clip-path:polygon(44% 0,56% 0,100% 100%,0 100%);background:linear-gradient(180deg,rgba(255,236,190,.26),rgba(255,236,190,0) 85%)}
 #bg .beam.l{left:calc(50% - 215px);animation:swayL 9s ease-in-out infinite}#bg .beam.r{right:calc(50% - 215px);animation:swayR 11s ease-in-out infinite}
 @keyframes swayL{0%,100%{transform:rotate(18deg)}50%{transform:rotate(4deg)}}
@@ -221,7 +222,7 @@ details[open] summary::after{content:"–"}
 </style>
 </head>
 <body>
-<div id="bg" aria-hidden="true"><div class="beam l"></div><div class="beam r"></div><canvas id="glitter"></canvas></div>
+<div id="bg" aria-hidden="true"><div class="beams" id="beams"><div class="beam l"></div><div class="beam r"></div></div><canvas id="glitter"></canvas></div>
 <div id="splash" aria-hidden="true"><div class="tia"><img src="/icons/diademe.webp" alt="">
 <span class="tw" style="left:50%;top:9%;animation-delay:.3s"><i></i></span><span class="tw" style="left:50%;top:53%;animation-delay:.9s"><i></i></span>
 <span class="tw" style="left:70%;top:54%;animation-delay:1.4s"><i></i></span><span class="tw" style="left:30%;top:54%;animation-delay:1.9s"><i></i></span>
@@ -526,6 +527,11 @@ function vCountdown(){
     <div><b id="cd2">${two(m)}</b><small>minutes</small></div><div><b id="cd3">${two(s)}</b><small>secondes</small></div></div></div>`;
 }
 let BULBS_DONE=false;
+function beams(){const b=document.getElementById("beams");if(!b)return;
+  const home=!UI.admin&&(!P||UI.tab==="jouer");
+  if(!home){b.style.opacity=0;return;}
+  b.style.opacity=Math.max(0,1-window.scrollY/380).toFixed(2);}
+window.addEventListener("scroll",()=>{if(!UI.admin&&(!P||UI.tab==="jouer"))beams();},{passive:true});
 function vHero(hello,tag){
   return `<div class="hero"><div class="glass">${hello?`<p class="hello">${hello}</p>`:""}<h1 class="shine">L'Élue</h1>
     <p class="tag">${tag||"Les dernières retouches avant le grand soir"}</p>${vCountdown()}</div><div class="bulbs"></div></div>`;
@@ -557,8 +563,8 @@ const TABS=[["jouer","Jouer"],["noter","Noter"],["quiz","Tests"],["groupes","Gro
 function render(soft){
   if(DRAG) return;
   const app=document.getElementById("app"), nav=document.getElementById("navbar");
-  if(UI.admin){nav.style.display="none";app.innerHTML=vAdmin();return;}
-  if(!P){nav.style.display="none";app.innerHTML=vWelcome();placeBulbs();return;}
+  if(UI.admin){nav.style.display="none";app.innerHTML=vAdmin();beams();return;}
+  if(!P){nav.style.display="none";app.innerHTML=vWelcome();placeBulbs();beams();return;}
   if(soft&&document.activeElement&&document.activeElement.tagName==="INPUT") return;
   nav.style.display="";
   document.getElementById("nav").innerHTML=TABS.map(t=>`<button data-a="tab" data-v="${t[0]}" class="${UI.tab===t[0]?"on":""}">${ICONS[t[0]]}${t[1]}</button>`).join("");
@@ -566,7 +572,7 @@ function render(soft){
     <button class="me" data-a="tab" data-v="profil"><span class="av">${esc(P.emoji)}</span>${esc(P.name)}<span class="sync" id="sync">${UI.syncing?"…":"✓"}</span></button></header>`;
   const views={jouer:vJouer,noter:vNoter,quiz:vQuiz,groupes:vGroupes,resultats:vResultats,profil:vProfil};
   app.innerHTML=head+(views[UI.tab]||vJouer)();
-  placeBulbs();
+  placeBulbs(); beams();
   if(UI.tab==="jouer"&&isOpen()&&R.manche>1&&!saved(P,R.manche)) saveRound(R.manche,roundOf(P,R.manche));
 }
 
@@ -815,7 +821,7 @@ async function makePersoStory(id){
 /* ===================== ADMIN ===================== */
 function vAdmin(){
   if(!UI.adminPwd) return `<div class="welcome" style="padding-top:40px"><img src="/icons/diademe.webp" alt="" style="width:160px"><div class="logo shine" style="font-size:44px">Admin</div><div class="box"><h3>Espace admin</h3>
-    <form id="fadmin"><input class="field" type="password" id="apwd" placeholder="Mot de passe admin"><button class="btn gold wide" style="margin-top:10px">Entrer</button></form>
+    <form id="fadmin"><input class="field" type="password" id="apwd" placeholder="Mot de passe admin" autocapitalize="off" autocorrect="off" autocomplete="current-password" spellcheck="false"><button class="btn gold wide" style="margin-top:10px">Entrer</button></form>
     <p style="margin-top:12px;text-align:center"><a class="link" href="/">← Retour à l'appli</a></p></div></div>`;
   const n=Math.min(R.manche,3), locked=R.votes_locked;
   const toLocal=d=>{if(!d)return"";const x=new Date(d);const p=v=>String(v).padStart(2,"0");return `${x.getFullYear()}-${p(x.getMonth()+1)}-${p(x.getDate())}T${p(x.getHours())}:${p(x.getMinutes())}`;};
@@ -1027,7 +1033,7 @@ document.addEventListener("submit",async e=>{
     if(id==="fname"){ const name=document.getElementById("pname").value.trim(); if(name){patch({name}); toast("Prénom modifié"); render();} }
     if(id==="fmove"){ const v=document.getElementById("mid").value, n=R.manche, order=roundOf(P,n).filter(x=>x!==v);
       let pos=Math.max(1,Math.min(order.length+1,parseInt(document.getElementById("mpos").value)||1)); order.splice(pos-1,0,v); saveRound(n,order); closeModal(); render(); }
-    if(id==="fadmin"){ const pwd=document.getElementById("apwd").value; if(await API.adminCheck(pwd)){UI.adminPwd=pwd;ls.set("lelue-admin",pwd); await refreshShared(); render();} else toast(ERRORS.NOT_ADMIN,true); }
+    if(id==="fadmin"){ const raw=document.getElementById("apwd").value, pwd=raw.trim(); if(await API.adminCheck(pwd)||(raw!==pwd&&await API.adminCheck(raw))){UI.adminPwd=pwd;ls.set("lelue-admin",pwd); await refreshShared(); render();} else toast(ERRORS.NOT_ADMIN,true); }
   }catch(err){toast(errMsg(err),true);}
   finally{if(btn&&document.body.contains(btn)) btn.disabled=false;}
 });
