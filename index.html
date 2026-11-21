@@ -150,6 +150,11 @@ details[open] summary::after{content:"–"}
 .welcome .box{text-align:left}
 .link{color:var(--gold);text-decoration:underline;font-size:14px}
 .copyarea{width:100%;min-height:90px;padding:10px;border-radius:12px;background:var(--bg2);border:1px solid var(--line);color:var(--txt);font:inherit;font-size:13px}
+.qopt{display:block;width:100%;text-align:left;padding:14px 16px;margin:8px 0;border-radius:14px;background:var(--card);border:1px solid var(--line);font-weight:500}
+.qopt.on{border-color:var(--gold);background:rgba(242,196,109,.12)}
+.qopt.good{border-color:var(--ok);background:rgba(126,224,176,.10)} .qopt.bad{border-color:var(--bad);background:rgba(255,138,138,.08)}
+.qnote{font-family:"Playfair Display",serif;font-size:72px;font-weight:800;color:var(--gold);line-height:1;text-align:center}
+.qnote small{font-size:28px;color:var(--mut)}
 .storyprev{width:100%;border-radius:12px;display:block;margin-bottom:10px}
 </style>
 </head>
@@ -193,8 +198,62 @@ const ICONS = {
   jouer:'<svg viewBox="0 0 24 24"><path d="M5 18h14M6 18l-2-10 5 4 3-6 3 6 5-4-2 10"/></svg>',
   noter:'<svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6 .6-4.5 4 1.3 6-5.4-3.2-5.4 3.2 1.3-6-4.5-4 6-.6z"/></svg>',
   groupes:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.5"/><path d="M3 19c.6-3.4 3-5 6-5s5.4 1.6 6 5M15 14.5c2.6-.3 4.8 1.1 5.4 4"/></svg>',
+  quiz:'<svg viewBox="0 0 24 24"><path d="M4 5.5C6.5 4 9.5 4 12 6c2.5-2 5.5-2 8-.5V19c-2.5-1.5-5.5-1.5-8 .5-2.5-2-5.5-2-8-.5z"/><path d="M12 6v13.5"/></svg>',
   resultats:'<svg viewBox="0 0 24 24"><rect x="4" y="12" width="4" height="8" rx="1"/><rect x="10" y="6" width="4" height="14" rx="1"/><rect x="16" y="9" width="4" height="11" rx="1"/></svg>'};
 const GRIP='<svg viewBox="0 0 20 20"><circle cx="7" cy="5" r="1.6"/><circle cx="13" cy="5" r="1.6"/><circle cx="7" cy="10" r="1.6"/><circle cx="13" cy="10" r="1.6"/><circle cx="7" cy="15" r="1.6"/><circle cx="13" cy="15" r="1.6"/></svg>';
+
+/* ===================== QUIZ « FAIS COMME LES MISS » ===================== */
+const QUIZ_REAL_TEST = "https://www.75secondes.fr/tests/culture-generale/80-points-ramenes-sur-20-passe-a-ton-tour-lepreuve-officielle-de-culture-generale-de-miss-france-2027";
+const QUIZ = [
+ // Actualité
+ ["Actualité","En février 2026, les Jeux olympiques d'hiver se sont déroulés en Italie, à Milan et à…",["Turin","Cortina d'Ampezzo","Bolzano","Venise"],1,"Ce sont les JO de Milan-Cortina."],
+ ["Actualité","Avec les États-Unis et le Mexique, quel pays a co-organisé la Coupe du monde de football 2026 ?",["Le Brésil","Le Canada","L'Argentine","Cuba"],1,"Première Coupe du monde organisée par trois pays."],
+ ["Actualité","Quel pays a adopté l'euro au 1er janvier 2026 ?",["La Pologne","La Hongrie","La Bulgarie","La Roumanie"],2,"La Bulgarie est devenue le 21e pays de la zone euro."],
+ ["Actualité","En quelle année aura lieu la prochaine élection présidentielle française ?",["2026","2027","2028","2029"],1,"Elle est prévue au printemps 2027."],
+ ["Actualité","Quel pays est devenu le 32e membre de l'OTAN en 2024 ?",["La Finlande","L'Ukraine","La Suisse","La Suède"],3,"La Suède a rejoint l'OTAN en mars 2024, un an après la Finlande."],
+ ["Actualité","Notre-Dame de Paris a rouvert ses portes en décembre…",["2023","2024","2025","2026"],1,"Cinq ans après l'incendie d'avril 2019."],
+ // Culture web
+ ["Culture web","Sur les réseaux, que signifie « GOAT » ?",["Une chèvre de compagnie","Greatest Of All Time","Go Out And Travel","Good Old Awesome Times"],1,"Le « plus grand de tous les temps »."],
+ ["Culture web","Quelle application a lancé les « stories » en 2013, avant Instagram ?",["Snapchat","TikTok","Facebook","Twitter"],0,"Instagram a repris le principe en 2016."],
+ ["Culture web","Que veut dire « IRL » ?",["In Real Life","I Really Love","Instant Reply Later","International Royal League"],0,"« Dans la vraie vie », par opposition à en ligne."],
+ ["Culture web","À sa création, un tweet était limité à combien de caractères ?",["100","140","200","280"],1,"Passé à 280 caractères en 2017."],
+ // Arts & mode
+ ["Arts & mode","Qui a peint « La Jeune Fille à la perle » ?",["Rembrandt","Johannes Vermeer","Léonard de Vinci","Botticelli"],1,"Un tableau du peintre néerlandais Vermeer, vers 1665."],
+ ["Arts & mode","Quelle maison de mode a pour emblème deux C entrelacés ?",["Céline","Chloé","Chanel","Courrèges"],2,"Le logo créé par Gabrielle « Coco » Chanel."],
+ ["Arts & mode","Quel architecte a imaginé la pyramide du Louvre ?",["Jean Nouvel","Ieoh Ming Pei","Le Corbusier","Renzo Piano"],1,"Inaugurée en 1989."],
+ ["Arts & mode","Qui a composé le célèbre « Boléro » ?",["Claude Debussy","Erik Satie","Maurice Ravel","Georges Bizet"],2,"Créé en 1928."],
+ ["Arts & mode","Qui a écrit « Le Petit Prince » ?",["Jules Verne","Antoine de Saint-Exupéry","Victor Hugo","Albert Camus"],1,"Publié en 1943."],
+ ["Arts & mode","Quel accessoire est indissociable de l'élection : l'écharpe, et…",["Le diadème / la couronne","Le sceptre","La cape","L'éventail"],0,"La couronne de Miss France, posée par la Miss sortante."],
+ // Histoire & citoyenneté
+ ["Histoire & citoyenneté","En quelle année les Françaises ont-elles voté pour la première fois ?",["1918","1936","1945","1968"],2,"Aux municipales d'avril 1945, après l'ordonnance de 1944."],
+ ["Histoire & citoyenneté","Quelle date est celle de la prise de la Bastille ?",["14 juillet 1789","4 août 1789","21 janvier 1793","11 novembre 1918"],0,"Devenue fête nationale en 1880."],
+ ["Histoire & citoyenneté","Combien de temps dure le mandat du président de la République ?",["4 ans","5 ans","6 ans","7 ans"],1,"Le quinquennat existe depuis 2002."],
+ ["Histoire & citoyenneté","Qui a porté l'abolition de la peine de mort en France en 1981 ?",["Simone Veil","Robert Badinter","Jacques Chirac","Charles de Gaulle"],1,"Garde des Sceaux de François Mitterrand."],
+ ["Histoire & citoyenneté","Quelle artiste et résistante est entrée au Panthéon en 2021 ?",["Édith Piaf","Joséphine Baker","Simone Signoret","Dalida"],1,"Première femme noire à y entrer."],
+ ["Histoire & citoyenneté","Combien de pays compte l'Union européenne ?",["25","27","28","30"],1,"27 depuis le départ du Royaume-Uni en 2020."],
+ // Géographie
+ ["Géographie","Quel est le plus haut sommet de France ?",["Le mont Blanc","Le Vignemale","Le mont Ventoux","La Barre des Écrins"],0,"Environ 4 806 mètres."],
+ ["Géographie","Quelle est la capitale de l'Australie ?",["Sydney","Melbourne","Canberra","Perth"],2,"Un piège classique !"],
+ ["Géographie","Quel fleuve se jette dans l'Atlantique après avoir traversé Nantes ?",["La Seine","La Garonne","La Loire","Le Rhône"],2,"Le plus long fleuve de France."],
+ ["Géographie","Combien de régions compte la France métropolitaine ?",["12","13","18","22"],1,"13 en métropole, 18 avec l'outre-mer."],
+ ["Géographie","Quel est le chef-lieu de la Martinique ?",["Pointe-à-Pitre","Fort-de-France","Cayenne","Basse-Terre"],1,"Pointe-à-Pitre et Basse-Terre sont en Guadeloupe."],
+ // Français
+ ["Français","Quel mot est correctement orthographié ?",["Néamoins","Néanmoin","Néanmoins","Néenmoins"],2,"N-é-a-n-m-o-i-n-s."],
+ ["Français","Complète : « Les robes qu'elle a … sont superbes. »",["acheté","achetés","achetée","achetées"],3,"Le COD « robes » est placé avant : on accorde."],
+ ["Français","Quel est le pluriel de « un œil » ?",["Des œils","Des yeux","Des œuils","Des yeuxs"],1,"Sauf dans « des œils-de-bœuf » !"],
+ ["Français","Que veut dire « poser un lapin » ?",["Offrir un cadeau","Ne pas venir à un rendez-vous","Partir en avance","Faire une blague"],1,"Faire attendre quelqu'un pour rien."],
+ ["Français","Quel est le féminin de « ambassadeur » ?",["Ambassadeuse","Ambassadeure","Ambassadrice","Ambassadresse"],2,"Comme acteur / actrice."],
+ ["Français","Quel mot est un synonyme d'« éphémère » ?",["Passager","Éternel","Lumineux","Solide"],0,"Qui ne dure pas."],
+ // Logique
+ ["Logique","Quel nombre continue la suite : 2, 6, 12, 20, 30, … ?",["36","40","42","48"],2,"On ajoute 4, 6, 8, 10, puis 12."],
+ ["Logique","Un nénuphar double de taille chaque jour et couvre tout le lac en 30 jours. En combien de jours couvre-t-il la moitié du lac ?",["15","20","29","10"],2,"La veille du 30e jour !"],
+ ["Logique","Si 3 chats attrapent 3 souris en 3 minutes, combien faut-il de chats pour attraper 100 souris en 100 minutes ?",["3","33","100","300"],0,"Chaque chat attrape une souris toutes les 3 minutes."],
+ ["Logique","Combien de fois écrit-on le chiffre 9 en comptant de 1 à 100 ?",["10","11","19","20"],3,"Dix fois en unité, dix fois en dizaine (90 à 99)."],
+ ["Logique","Marie a 4 filles et chacune d'elles a un frère. Combien Marie a-t-elle d'enfants ?",["5","8","6","4"],0,"Elles ont toutes le même frère."],
+ // Miss France
+ ["Miss France","Qui présente l'élection de Miss France sur TF1 depuis plus de 30 ans ?",["Nikos Aliagas","Jean-Pierre Foucault","Arthur","Michel Drucker"],1,"Il présente l'élection depuis 1995."],
+ ["Miss France","Sur quelle île les candidates de 2027 ont-elles fait leur voyage de préparation ?",["La Martinique","Saint-Martin","La Réunion","Tahiti"],1,"Une première pour l'élection."]
+];
 
 /* ===================== ACCÈS À LA BASE ===================== */
 function makeApi(){
@@ -350,7 +409,7 @@ function tick(){
 }
 
 /* ===================== VUES ===================== */
-const TABS=[["jouer","Jouer"],["noter","Noter"],["groupes","Groupes"],["resultats","Résultats"]];
+const TABS=[["jouer","Jouer"],["noter","Noter"],["quiz","Culture G"],["groupes","Groupes"],["resultats","Résultats"]];
 function render(soft){
   if(DRAG) return;
   const app=document.getElementById("app"), nav=document.getElementById("navbar");
@@ -361,7 +420,7 @@ function render(soft){
   document.getElementById("nav").innerHTML=TABS.map(t=>`<button data-a="tab" data-v="${t[0]}" class="${UI.tab===t[0]?"on":""}">${ICONS[t[0]]}${t[1]}</button>`).join("");
   const head=`<header><div class="logo">L'<span>Élue</span></div>
     <button class="me" data-a="tab" data-v="profil"><span class="av">${esc(P.emoji)}</span>${esc(P.name)}<span class="sync" id="sync">${UI.syncing?"…":"✓"}</span></button></header>`;
-  const views={jouer:vJouer,noter:vNoter,groupes:vGroupes,resultats:vResultats,profil:vProfil};
+  const views={jouer:vJouer,noter:vNoter,quiz:vQuiz,groupes:vGroupes,resultats:vResultats,profil:vProfil};
   app.innerHTML=head+(views[UI.tab]||vJouer)();
   if(UI.tab==="jouer"&&isOpen()&&R.manche>1&&!saved(P,R.manche)) saveRound(R.manche,roundOf(P,R.manche));
 }
@@ -517,6 +576,50 @@ function vProfil(){
   <div style="text-align:center;margin:18px 0"><a class="link" href="#admin" style="font-size:12px;color:var(--mut)">Espace admin</a></div>`;
 }
 
+
+/* ===================== VUE QUIZ ===================== */
+const QKEY="lelue-quiz";
+function qState(){ if(!UI.qz){ try{UI.qz=JSON.parse(ls.get(QKEY))||null;}catch(e){} if(!UI.qz) UI.qz={i:0,ans:[],started:false,done:false,review:false}; } return UI.qz; }
+function qSave(){ ls.set(QKEY,JSON.stringify(UI.qz)); }
+const qCorrect=ans=>QUIZ.filter((q,i)=>ans[i]===q[3]).length;
+const qNote=c=>Math.round(c/QUIZ.length*200)/10;
+function vQuiz(){
+  const q=qState();
+  if(!q.started) {
+    const prev=P.quiz_total?qNote(P.quiz_score):null;
+    return `<h2>Le test de culture G des Miss</h2>
+    <div class="box"><p style="margin-bottom:10px">Les 31 candidates ont passé leur test de culture générale pendant leur voyage à Saint-Martin. <b>Et toi, tu aurais eu combien ?</b></p>
+    <div class="stat" style="margin:12px 0"><div><b>${QUIZ.length}</b>questions</div><div><b>/20</b>la note</div><div><b>${STATS?.quiz_avg??"–"}</b>moyenne France</div></div>
+    <p class="det">Actualité, culture web, arts & mode, histoire, géographie, français, logique… Pas de chrono, prends ton temps. Ta note s'affiche dans tes groupes et compte pour la moyenne de la France.</p>
+    ${prev!==null?`<div class="note">Ta note : <b>${prev}/20</b>. Tu peux le refaire pour le fun, mais c'est ta première note qui compte.</div>`:""}
+    <button class="btn gold wide" style="margin-top:12px" data-a="qstart">${prev!==null?"Le refaire":"Commencer le test"}</button></div>`;
+  }
+  if(!q.done){
+    const it=QUIZ[q.i];
+    return `<div class="row" style="margin-top:14px"><span class="pill gold">${it[0]}</span><span class="det" style="margin-left:auto">Question ${q.i+1}/${QUIZ.length}</span></div>
+    <div class="prog"><i style="width:${q.i/QUIZ.length*100}%"></i></div>
+    <h2 style="font-size:22px;line-height:1.3;margin:16px 0 10px">${esc(it[1])}</h2>
+    ${it[2].map((o,k)=>`<button class="qopt ${q.ans[q.i]===k?"on":""}" data-a="qans" data-v="${k}">${esc(o)}</button>`).join("")}
+    <div class="row" style="justify-content:space-between;margin-top:10px">${q.i>0?`<button class="btn sm ghost" data-a="qprev">← Précédente</button>`:"<span></span>"}<button class="btn sm ghost" data-a="qquit">Abandonner</button></div>`;
+  }
+  const c=qCorrect(q.ans), note=qNote(c);
+  const themes=[...new Set(QUIZ.map(x=>x[0]))].map(t=>{const idx=QUIZ.map((x,i)=>i).filter(i=>QUIZ[i][0]===t);return {t,ok:idx.filter(i=>q.ans[i]===QUIZ[i][3]).length,n:idx.length};});
+  const L=LEAGUES.find(l=>l.id===UI.league), mates=L?(LP[L.id]||[]).map(p=>p.id===P.id?P:p).filter(p=>p.quiz_total).map(p=>({p,n:qNote(p.quiz_score)})).sort((a,b)=>b.n-a.n):[];
+  const avgF=STATS?.quiz_avg;
+  let html=`<h2>Ton résultat</h2>
+  <div class="box" style="text-align:center"><div class="qnote">${String(note).replace(".",",")}<small>/20</small></div>
+    <div class="sub" style="margin-top:8px">${c} bonnes réponses sur ${QUIZ.length}${avgF!=null?` · moyenne de la France : <b style="color:var(--txt)">${String(avgF).replace(".",",")}/20</b>`:""}</div>
+    <div class="sub">${note>=16?"Digne d'une Miss France !":note>=12?"Bravo, tu aurais fait bonne figure à Saint-Martin.":note>=8?"Pas mal ! Quelques révisions et c'est la couronne.":"L'important, c'est l'écharpe !"}</div>
+    <button class="btn gold wide" data-a="qstory">Partager ma note en story</button></div>
+  <div class="box"><h3>Par thème</h3>${themes.map(x=>`<div class="rk"><div class="grow">${x.t}</div><span class="val">${x.ok}/${x.n}</span></div>`).join("")}</div>`;
+  if(mates.length) html+=`<div class="box"><h3>${esc(L.name)}</h3>${mates.map((x,i)=>`<div class="lb ${x.p.id===P.id?"mine":""}"><div class="av">${esc(x.p.emoji)}</div><div class="grow"><b>${esc(x.p.name)}</b></div><div class="tot">${String(x.n).replace(".",",")}</div></div>`).join("")}</div>`;
+  html+=`<div class="box"><details ${q.review?"open":""}><summary>Voir les corrections</summary>${QUIZ.map((it,i)=>`<div style="margin-top:14px"><div class="det">${i+1}. ${it[0]}</div><b>${esc(it[1])}</b>
+    <div class="qopt good" style="padding:8px 12px">${esc(it[2][it[3]])}</div>${q.ans[i]!==it[3]?`<div class="qopt bad" style="padding:8px 12px">Ta réponse : ${q.ans[i]!=null?esc(it[2][q.ans[i]]):"—"}</div>`:""}<div class="det">${esc(it[4])}</div></div>`).join("")}</details></div>
+  <button class="btn wide" data-a="qstart">Refaire le test</button>
+  <p class="det" style="text-align:center;margin:22px 0 6px;opacity:.7">Curieuse ? Le test passé par les candidates a été publié dans la presse : <a href="${QUIZ_REAL_TEST}" target="_blank" rel="noopener">le voir ici</a>.</p>`;
+  return html;
+}
+
 /* ===================== ADMIN ===================== */
 function vAdmin(){
   if(!UI.adminPwd) return `<div class="welcome"><div class="logo" style="font-size:34px">L'<span>Élue</span></div><div class="box"><h3>Espace admin</h3>
@@ -617,6 +720,23 @@ async function makeStory(){
 }
 function roundRect(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
 
+function showStory(s){ const file=new File([s.blob],"lelue.png",{type:"image/png"});
+  modal(`<img class="storyprev" src="${s.url}" alt="Ma story L'Élue"><div class="row"><button class="btn gold grow" id="sshare">Partager</button><a class="btn" href="${s.url}" download="lelue.png">Télécharger</a></div><button class="btn sm ghost wide" data-a="closemodal" style="margin-top:8px">Fermer</button>`);
+  document.getElementById("sshare").onclick=async()=>{try{if(navigator.canShare&&navigator.canShare({files:[file]})) await navigator.share({files:[file],text:`Sur L'Élue 👑 ${SITE}`}); else toast("Utilise « Télécharger » puis poste l'image en story");}catch(err){}};
+}
+async function makeQuizStory(note){
+  const cv=document.createElement("canvas"); cv.width=1080; cv.height=1920; const g=cv.getContext("2d");
+  try{await document.fonts.load("italic 800 150px 'Playfair Display'");await document.fonts.load("800 300px 'Playfair Display'");await document.fonts.load("500 40px 'DM Sans'");}catch(e){}
+  const bg=g.createRadialGradient(540,200,50,540,700,1400); bg.addColorStop(0,"#3b1f63"); bg.addColorStop(1,"#120a1d"); g.fillStyle=bg; g.fillRect(0,0,1080,1920);
+  const gold=g.createLinearGradient(200,0,880,0); gold.addColorStop(0,"#f2c46d"); gold.addColorStop(.5,"#fff1cf"); gold.addColorStop(1,"#e0a63a");
+  g.textAlign="center"; g.fillStyle=gold; g.font="italic 800 150px 'Playfair Display'"; g.fillText("L'Élue",540,290);
+  g.fillStyle="#b9a8cc"; g.font="500 48px 'DM Sans'"; g.fillText("Le test de culture G des Miss",540,560); g.fillText("j'ai eu…",540,630);
+  g.fillStyle=gold; g.font="800 300px 'Playfair Display'"; g.fillText(String(note).replace(".",","),540,1010);
+  g.fillStyle="#b9a8cc"; g.font="800 110px 'Playfair Display'"; g.fillText("/ 20",540,1150);
+  g.fillStyle="#f6effa"; g.font="700 52px 'DM Sans'"; g.fillText("Et toi, tu aurais eu combien ?",540,1500);
+  g.fillStyle="#f2c46d"; g.font="700 44px 'DM Sans'"; g.fillText(SITE,540,1830);
+  return new Promise(res=>cv.toBlob(b=>res({blob:b,url:cv.toDataURL("image/png")}),"image/png"));
+}
 /* ===================== ACTIONS ===================== */
 function modal(html){document.getElementById("overlay").innerHTML=`<div class="modal" data-a="closemodal"><div class="box">${html}</div></div>`;}
 function closeModal(){document.getElementById("overlay").innerHTML="";}
@@ -644,15 +764,19 @@ document.addEventListener("click",async e=>{
     case "next": { const i=CANDS.findIndex(c=>c.id===v); const nx=CANDS.slice(i+1).concat(CANDS.slice(0,i)).find(c=>!done(P,c.id)); UI.open=nx?nx.id:null; if(!nx) toast("Toutes notées !");
       setTimeout(()=>{const el=document.querySelector(".cand.open"); el&&el.scrollIntoView({behavior:"smooth",block:"start"});},30); break; }
     case "coeur": patch({coeur:P.coeur===v?null:v}); if(P.coeur) toast(`Coup de cœur : Miss ${BY[v].region}`); break;
+    case "qstart": UI.qz={i:0,ans:[],started:true,done:false}; qSave(); window.scrollTo(0,0); break;
+    case "qans": { const q=qState(); q.ans[q.i]=+v; if(q.i<QUIZ.length-1) q.i++; else { q.done=true; const c=qCorrect(q.ans);
+        if(!P.quiz_total){ patch({quiz_score:c,quiz_total:QUIZ.length}); refreshShared().then(()=>render(true)); } }
+      qSave(); window.scrollTo(0,0); break; }
+    case "qprev": { const q=qState(); if(q.i>0) q.i--; qSave(); break; }
+    case "qquit": confirmBox("Abandonner le test ? Tes réponses seront perdues.",()=>{UI.qz={i:0,ans:[],started:false,done:false};qSave();render();}); return;
+    case "qstory": { const q=qState(); const s=await makeQuizStory(qNote(qCorrect(q.ans))); showStory(s); return; }
     case "sendr1": saveRound(1,roundOf(P,1)); toast("Classement envoyé !"); break;
     case "resort": confirmBox("Re-trier ton classement d'après tes notes ? Tes déplacements à la main seront remplacés.",()=>{saveRound(1,notesOrder(P));render();}); return;
     case "moveto": { if(!isOpen()) return; const n=R.manche, order=roundOf(P,n), i=order.indexOf(v);
       modal(`<p style="margin-bottom:10px">Déplacer <b>Miss ${BY[v].region}</b> à la place n°</p><form id="fmove" class="row"><input class="field grow" id="mpos" type="number" min="1" max="${order.length}" value="${i+1}" inputmode="numeric"><button class="btn gold">OK</button></form><input type="hidden" id="mid" value="${v}">`);
       setTimeout(()=>{const x=document.getElementById("mpos");x&&x.select();},50); return; }
-    case "story": { const s=await makeStory(); const file=new File([s.blob],"lelue-mon-top.png",{type:"image/png"});
-      modal(`<img class="storyprev" src="${s.url}" alt="Ma story L'Élue"><div class="row"><button class="btn gold grow" id="sshare">Partager</button><a class="btn" href="${s.url}" download="lelue-mon-top.png">Télécharger</a></div><button class="btn sm ghost wide" data-a="closemodal" style="margin-top:8px">Fermer</button>`);
-      document.getElementById("sshare").onclick=async()=>{try{if(navigator.canShare&&navigator.canShare({files:[file]})) await navigator.share({files:[file],text:`Mon top sur L'Élue 👑 ${SITE}`}); else toast("Utilise « Télécharger » puis poste l'image en story");}catch(err){}};
-      return; }
+    case "story": { showStory(await makeStory()); return; }
     case "league": UI.league=v; ls.set("cp-league",v); await loadLeague(v); break;
     case "share": { const l=LEAGUES.find(x=>x.id===v); const url=location.origin+location.pathname+"#rejoindre-"+l.code;
       const t=`Rejoins mon groupe « ${l.name} » sur L'Élue 👑\nOn note les candidates et on fait nos pronos avant l'élection !\nCode : ${l.code}\n${url}`;
