@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>L'Élue · Note, pronostique, compare</title>
+<meta name="description" content="Note les candidates, fais tes pronos et compare-toi à tes copines et à toute la France.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,800;1,600&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#170d24;--bg2:#21143a;--card:#2a1a47;--card2:#341f58;--line:rgba(255,255,255,.10);--txt:#f6effa;--mut:#b9a8cc;
+  --gold:#f2c46d;--gold2:#e0a63a;--pink:#ff7eb6;--ok:#7ee0b0;--bad:#ff8a8a;--r:16px}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--txt);font-family:"DM Sans",system-ui,sans-serif;font-size:15px;line-height:1.45}
+body{background:radial-gradient(1200px 500px at 50% -200px,#3b1f63 0%,transparent 70%),var(--bg);min-height:100vh;padding-bottom:90px}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+button:disabled{cursor:not-allowed}
+input{font:inherit;color:inherit}
+a{color:var(--gold)}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px}
+header{padding:16px 0 6px;display:flex;align-items:center;gap:10px}
+.logo{font-family:"Playfair Display",serif;font-weight:800;font-size:24px;background:linear-gradient(90deg,var(--gold),#fff1cf,var(--gold2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.logo span{font-style:italic}
+.me{margin-left:auto;display:flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-weight:600;font-size:14px}
+.me .av{width:28px;height:28px;font-size:15px}
+.sync{font-size:11px;color:var(--mut);min-width:14px;text-align:right}
+nav{position:fixed;left:0;right:0;bottom:0;background:rgba(23,13,36,.94);backdrop-filter:blur(10px);border-top:1px solid var(--line);z-index:10}
+nav .wrap{display:flex;justify-content:space-between;padding:6px 8px 10px}
+nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--mut);padding:6px 0;border-radius:12px}
+nav button .i{font-size:20px;line-height:1}
+nav button.on{color:var(--gold)}
+h1{font-family:"Playfair Display",serif;font-size:34px;line-height:1.1;margin:8px 0}
+h2{font-family:"Playfair Display",serif;font-size:24px;margin:14px 0 4px}
+h3{font-size:16px;margin:18px 0 8px;display:flex;align-items:center;gap:8px}
+.sub{color:var(--mut);font-size:14px;margin-bottom:12px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin:10px 0}
+.row{display:flex;gap:8px;align-items:center}
+.grow{flex:1;min-width:0}
+.btn{padding:10px 16px;border-radius:12px;background:var(--card2);border:1px solid var(--line);font-weight:600}
+.btn.gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#2a1700;border:0}
+.btn.sm{padding:6px 11px;font-size:13px;border-radius:10px}
+.btn.ghost{background:transparent}
+.btn.wide{width:100%}
+.field{width:100%;padding:11px 13px;border-radius:12px;background:var(--bg2);border:1px solid var(--line);outline:none}
+.field:focus{border-color:var(--gold)}
+.field.code{text-transform:uppercase;letter-spacing:1px;font-weight:700}
+.toggle{display:flex;align-items:center;justify-content:space-between;padding:11px 2px;border-bottom:1px solid var(--line)}
+.toggle:last-child{border-bottom:0}
+.sw{width:46px;height:27px;border-radius:999px;background:#4a3a63;position:relative;transition:.2s;flex:0 0 auto}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:.2s}
+.sw.on{background:var(--gold2)} .sw.on::after{left:22px}
+.seg{display:flex;background:var(--bg2);border-radius:12px;padding:4px;gap:4px}
+.seg button{flex:1;padding:9px;border-radius:9px;font-weight:600;font-size:14px;color:var(--mut)}
+.seg button.on{background:var(--card2);color:var(--txt)}
+.av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--card2);font-size:18px;flex:0 0 auto}
+.emojis{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.emojis button{width:42px;height:42px;border-radius:12px;background:var(--bg2);font-size:20px;border:1px solid var(--line)}
+.emojis button.on{border-color:var(--gold);background:rgba(242,196,109,.15)}
+.cand{background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin:8px 0;overflow:hidden}
+.cand.open{border-color:rgba(242,196,109,.5)}
+.chead{display:flex;align-items:center;gap:12px;padding:12px 14px;width:100%;text-align:left}
+.num{width:38px;height:38px;border-radius:12px;background:var(--bg2);display:grid;place-items:center;font-weight:700;color:var(--gold);flex:0 0 auto;font-size:14px}
+.cname{font-weight:700} .creg{color:var(--mut);font-size:13px}
+.score{margin-left:auto;text-align:right;flex:0 0 auto}
+.score b{font-size:20px;font-family:"Playfair Display",serif;color:var(--gold)}
+.score small{display:block;color:var(--mut);font-size:11px}
+.heart{font-size:20px;padding:4px;opacity:.35;flex:0 0 auto;margin-right:10px} .heart.on{opacity:1}
+.cbody{padding:2px 14px 14px;border-top:1px solid var(--line)}
+.crit{margin-top:12px}
+.crit .lab{font-size:13px;color:var(--mut);margin-bottom:6px;display:flex;justify-content:space-between}
+.notes{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
+.notes button{height:34px;border-radius:9px;background:var(--bg2);font-weight:600;font-size:14px}
+.notes button.on{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#2a1700}
+.notes button.in{background:#4a3466}
+.links{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center}
+.links a{font-size:13px;text-decoration:none;padding:7px 11px;border-radius:10px;background:var(--bg2);border:1px solid var(--line);color:var(--txt)}
+.prog{height:6px;border-radius:999px;background:var(--bg2);overflow:hidden;margin:6px 0 2px}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,var(--pink),var(--gold))}
+.rk{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.rk:last-child{border-bottom:0}
+.rk .pos{width:30px;font-family:"Playfair Display",serif;font-weight:800;font-size:20px;color:var(--mut);text-align:center;flex:0 0 auto}
+.rk.p1 .pos{color:var(--gold)} .rk.p2 .pos{color:#dfe3ea} .rk.p3 .pos{color:#e6a77a}
+.rk .val{color:var(--gold);font-weight:700;flex:0 0 auto}
+.picks{display:flex;flex-wrap:wrap;gap:6px}
+.pk{padding:7px 10px;border-radius:10px;background:var(--bg2);border:1px solid var(--line);font-size:13px;font-weight:500}
+.pk.on{background:rgba(242,196,109,.18);border-color:var(--gold);color:#ffe7b5}
+.pk .rkb{display:inline-block;min-width:18px;margin-right:4px;font-weight:700;color:var(--gold)}
+.counter{margin-left:auto;font-size:13px;color:var(--mut);font-weight:500} .counter.full{color:var(--ok)}
+.order .slot{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:12px;background:var(--bg2);margin:6px 0;border:1px dashed var(--line)}
+.order .slot.f{border-style:solid;border-color:rgba(242,196,109,.4)}
+.order .slot .t{width:120px;color:var(--mut);font-size:13px;flex:0 0 auto} .order .slot.f .t{color:var(--gold)}
+.lb{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.lb:last-child{border-bottom:0}
+.lb.mine{background:rgba(242,196,109,.07);margin:0 -14px;padding:12px 14px}
+.lb .tot{margin-left:auto;font-family:"Playfair Display",serif;font-size:24px;font-weight:800;color:var(--gold)}
+.det{font-size:12px;color:var(--mut)}
+.pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;background:var(--card2);color:var(--mut);font-weight:600}
+.pill.ok{background:rgba(126,224,176,.15);color:var(--ok)}
+.empty{text-align:center;color:var(--mut);padding:30px 10px} .empty .big{font-size:40px;margin-bottom:8px}
+.rules li{margin:4px 0 4px 18px;color:var(--mut);font-size:14px} .rules b{color:var(--txt)}
+.note{font-size:13px;color:var(--mut);background:rgba(255,126,182,.08);border:1px solid rgba(255,126,182,.25);padding:10px 12px;border-radius:12px;margin:10px 0}
+.lock{font-size:13px;background:rgba(255,138,138,.12);border:1px solid rgba(255,138,138,.35);color:#ffd0d0;padding:10px 12px;border-radius:12px;margin:10px 0}
+.bigcode{font-family:"Playfair Display",serif;font-size:30px;font-weight:800;letter-spacing:2px;color:var(--gold);text-align:center;padding:10px;background:var(--bg2);border-radius:12px;margin:8px 0}
+.grp{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);width:100%;text-align:left}
+.grp:last-child{border-bottom:0}
+.stat{display:flex;gap:10px}
+.stat>div{flex:1;background:var(--bg2);border-radius:12px;padding:10px;text-align:center}
+.stat b{display:block;font-family:"Playfair Display",serif;font-size:24px;color:var(--gold)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:grid;place-items:center;z-index:20;padding:20px}
+.modal .box{max-width:380px;width:100%}
+.toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:var(--gold);color:#2a1700;padding:9px 16px;border-radius:999px;font-weight:700;font-size:14px;z-index:30;box-shadow:0 6px 20px rgba(0,0,0,.4);max-width:90vw;text-align:center}
+.toast.err{background:var(--bad)}
+.welcome{padding-top:40px;text-align:center}
+.welcome .box{text-align:left}
+.link{color:var(--gold);text-decoration:underline;font-size:14px}
+.copyarea{width:100%;min-height:90px;padding:10px;border-radius:12px;background:var(--bg2);border:1px solid var(--line);color:var(--txt);font:inherit;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"><div class="empty" style="padding-top:120px"><div class="big">👑</div>Chargement…</div></div>
+<nav id="navbar" style="display:none"><div class="wrap" id="nav"></div></nav>
+<div id="overlay"></div>
+
+<script>
+/* ===================== CONFIG ===================== */
+const SUPABASE_URL = "https://hjmreiccdcrrdnwmnnye.supabase.co";
+const SUPABASE_KEY = "sb_publishable_MAqip45XAF55N-By7v8kqw_DdcsjBvj";
+const ELECTION = "samedi 12 décembre";
+
+/* ===================== DONNÉES ===================== */
+const CANDS = [
+ ["Alsace","Chiara Blazevic",24],["Aquitaine","Solène Videau",22],["Auvergne","Lina Berthelier",24],
+ ["Bretagne","Margot Ferré-Bernard",20],["Bourgogne","Ilona Perrot",23],["Centre-Val de Loire","Justine Bourrelier",26],
+ ["Champagne-Ardenne","Céline Leduc",23],["Corse","Satine Nomary",20],["Côte d'Azur","May Haoues",19],
+ ["Franche-Comté","Emma Ninot",21],["Guyane","Sandra Justine",23],["Guadeloupe","Julia Désirée",20],
+ ["Île-de-France","Camilla Alash",24],["Languedoc","Candice Gauch",29],["Limousin","Élise Escuriol",22],
+ ["Lorraine","Léane Froment",21],["Martinique","Maureen-Alycia Lucea-Merlin",24],["Mayotte","Emma Saïd Issouf",24],
+ ["Midi-Pyrénées","Carla Rachail",23],["Nouvelle-Calédonie","Lana Prost",18],["Nord-Pas-de-Calais","Shana Mendes",18],
+ ["Normandie","Pauline Gourlez",22],["Pays de la Loire","Maëlle Hamon",23],["Picardie","Marie Villez",26],
+ ["Poitou-Charentes","Mandy Goudal",38],["Provence","Ophélie Vitalbo",28],["Réunion","Laetitia Roguet",21],
+ ["Rhône-Alpes","Julia Grid-Costantino",23],["Roussillon","Juliette Gauthier",23],["Saint-Barthélemy","Naïla Parotte",22],
+ ["Tahiti","Leia Diard",22]
+].map((c,i)=>({id:"c"+i,n:i+1,region:c[0],name:c[1],age:c[2]}));
+const BY = Object.fromEntries(CANDS.map(c=>[c.id,c]));
+const CRITS = [
+ {id:"beaute",label:"Beauté & allure"},{id:"defiles",label:"Défilés"},{id:"discours",label:"Discours & présentation"},
+ {id:"video",label:"Portrait vidéo"},{id:"costume",label:"Costume régional"},{id:"culture",label:"Test de culture générale"},
+ {id:"vibe",label:"Charisme / « elle a un truc »"}];
+const EMOJIS = ["👑","💄","✨","🌸","💅","🦋","🍾","💎","🌙","🎀","🔥","🍓","🐚","🌺","🦄","🍒"];
+const ORDER_LABELS = ["Miss France 👑","1re dauphine","2e dauphine","3e dauphine","4e dauphine"];
+const EMPTY_PRONO = ()=>({top15:[],top5:[],order:[null,null,null,null,null]});
+const ERRORS = {NAME_TAKEN:"Ce prénom est déjà pris dans ce groupe : change ton prénom dans ton profil (ex : Léa B.) puis réessaie.",
+  BAD_CODE:"Ce code n'existe pas. Vérifie-le !", VOTES_LOCKED:"Les votes sont fermés 🔒", NOT_ADMIN:"Mot de passe incorrect",
+  NO_PROFILE:"Profil introuvable, recharge la page."};
+
+/* ===================== ACCÈS À LA BASE ===================== */
+function makeApi(){
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const ok = ({data,error})=>{ if(error) throw error; return data; };
+  let uid=null;
+  return {
+    async session(){ const {data}=await sb.auth.getSession(); uid=data.session?.user?.id||null; return uid; },
+    async signIn(){ const d=ok(await sb.auth.signInAnonymously()); uid=d.user.id; return uid; },
+    async myProfile(){ return ok(await sb.from("profiles").select("*").eq("owner",uid).maybeSingle()); },
+    async createProfile(name,emoji){ return ok(await sb.from("profiles").insert({name,emoji}).select().single()); },
+    async saveProfile(id,patch){ return ok(await sb.from("profiles").update(patch).eq("id",id).select().single()); },
+    async recoveryCode(){ return ok(await sb.rpc("my_recovery_code")); },
+    async recover(code){ return ok(await sb.rpc("recover_profile",{p_code:code})); },
+    async createLeague(name){ return ok(await sb.rpc("create_league",{p_name:name})); },
+    async joinLeague(code){ return ok(await sb.rpc("join_league",{p_code:code})); },
+    async leaveLeague(leagueId,profileId){ return ok(await sb.from("league_members").delete().eq("league_id",leagueId).eq("profile_id",profileId)); },
+    async myLeagues(){ return ok(await sb.rpc("my_leagues"))||[]; },
+    async leagueProfiles(id){ return ok(await sb.rpc("league_profiles",{p_league:id}))||[]; },
+    async franceStats(){ return ok(await sb.rpc("france_stats")); },
+    async results(){ return ok(await sb.from("results").select("*").eq("id",1).single()); },
+    onResults(cb){ sb.channel("results").on("postgres_changes",{event:"*",schema:"public",table:"results"},p=>cb(p.new)).subscribe(); },
+    async adminCheck(pwd){ return ok(await sb.rpc("admin_check",{p_pwd:pwd})); },
+    async adminSetResults(pwd,r){ return ok(await sb.rpc("admin_set_results",{p_pwd:pwd,p_top15:r.top15,p_top5:r.top5,p_ord:r.ord})); },
+    async adminSetLock(pwd,b){ return ok(await sb.rpc("admin_set_lock",{p_pwd:pwd,p_locked:b})); }
+  };
+}
+const API = window.MOCK_API || makeApi();
+
+/* ===================== ÉTAT ===================== */
+let P=null;                       // mon profil
+let R={top15:[],top5:[],ord:[null,null,null,null,null],votes_locked:false};
+let F=null;                       // stats France
+let LEAGUES=[];                   // mes groupes
+const LP={};                      // profils par groupe
+const UI={tab:"groupes",open:null,filter:"all",q:"",league:null,welcome:"new",emoji:"👑",admin:false,adminPwd:"",syncing:false};
+let pendingJoin=null;
+const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+const errMsg=e=>{const m=(e&&e.message)||String(e);for(const k in ERRORS) if(m.includes(k)) return ERRORS[k];return "Oups, problème de connexion. Réessaie !";};
+function toast(t,err){const o=document.createElement("div");o.className="toast"+(err?" err":"");o.textContent=t;document.body.appendChild(o);setTimeout(()=>o.remove(),2600);}
+
+/* ===================== CALCULS ===================== */
+const critsOf=p=>p.mode==="global"?[{id:"global",label:"Note globale"}]:CRITS.filter(c=>(p.crits||[]).includes(c.id));
+function avg(p,cid){const n=(p.notes||{})[cid];if(!n)return null;const v=critsOf(p).map(c=>n[c.id]).filter(x=>typeof x==="number");return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;}
+const done=(p,cid)=>{const n=(p.notes||{})[cid]||{};const c=critsOf(p);return c.length>0&&c.every(k=>typeof n[k.id]==="number");};
+const ranking=p=>CANDS.map(c=>({c,s:avg(p,c.id)})).filter(x=>x.s!==null).sort((a,b)=>b.s-a.s||a.c.n-b.c.n);
+const franceTop=()=>(F?.ranking||[]).slice(0,5).map(x=>x.cand);
+function groupTop(profiles){const pts={};profiles.forEach(p=>(p.top5||[]).forEach((id,i)=>{pts[id]=(pts[id]||0)+5-i;}));
+  return Object.entries(pts).sort((a,b)=>b[1]-a[1]||BY[a[0]].n-BY[b[0]].n).map(([id,pts])=>({id,pts}));}
+function score(p){
+  const pr=p.prono||EMPTY_PRONO(), d={};
+  d.t15=pr.top15.filter(id=>R.top15.includes(id)).length;
+  d.t5=pr.top5.filter(id=>R.top5.includes(id)).length;
+  d.win=(pr.order[0]&&pr.order[0]===R.ord[0])?1:0;
+  d.exact=[1,2,3,4].filter(i=>pr.order[i]&&pr.order[i]===R.ord[i]).length;
+  const tele=d.t15+d.t5*3+d.win*10+d.exact*2;
+  const ft=franceTop(), mine=p.top5||[];
+  d.common=mine.filter(id=>ft.includes(id)).length;
+  d.same=mine.filter((id,i)=>ft[i]===id).length;
+  d.coeur=(p.coeur&&p.coeur===ft[0])?1:0;
+  const accord=ft.length?d.common*2+d.same+d.coeur*5:0;
+  return {tele,accord,total:tele+accord,d};
+}
+const resultsStarted=()=>R.top15.length>0||R.top5.length>0||R.ord.some(Boolean);
+
+/* ===================== SAUVEGARDE ===================== */
+let pend={},timer=null;
+function patch(obj){Object.assign(P,obj);Object.assign(pend,obj);UI.syncing=true;paintSync();clearTimeout(timer);timer=setTimeout(flush,700);}
+function recomputeTop5(){patch({top5:ranking(P).slice(0,5).map(x=>x.c.id)});}
+async function flush(){
+  const body=pend;pend={};if(!Object.keys(body).length){UI.syncing=false;paintSync();return;}
+  try{const fresh=await API.saveProfile(P.id,body);if(fresh&&!Object.keys(pend).length) P=fresh;}
+  catch(e){toast(errMsg(e),true);try{P=await API.myProfile();}catch(_){} render();}
+  UI.syncing=Object.keys(pend).length>0;paintSync();
+}
+function paintSync(){const s=document.getElementById("sync");if(s) s.textContent=UI.syncing?"…":"✓";}
+window.addEventListener("beforeunload",()=>{if(Object.keys(pend).length) flush();});
+
+/* ===================== CHARGEMENT ===================== */
+async function refreshShared(){
+  try{R=await API.results();}catch(e){}
+  try{F=await API.franceStats();}catch(e){}
+}
+async function refreshLeagues(){
+  try{LEAGUES=await API.myLeagues();}catch(e){LEAGUES=[];}
+  if(UI.league&&!LEAGUES.find(l=>l.id===UI.league)) UI.league=null;
+  if(!UI.league&&LEAGUES.length) UI.league=ls.get("cp-league")&&LEAGUES.find(l=>l.id===ls.get("cp-league"))?ls.get("cp-league"):LEAGUES[0].id;
+  if(UI.league) await loadLeague(UI.league);
+}
+async function loadLeague(id){try{LP[id]=await API.leagueProfiles(id);}catch(e){}}
+async function boot(){
+  readHash();
+  if(UI.admin){await refreshShared();render();return;}
+  try{
+    const uid=await API.session();
+    if(uid) P=await API.myProfile();
+  }catch(e){}
+  await refreshShared();
+  if(P){await refreshLeagues(); if(pendingJoin) await doJoin(pendingJoin);}
+  render();
+  try{API.onResults(r=>{R=r;render(true);});}catch(e){}
+  setInterval(async()=>{ if(document.hidden) return; await refreshShared(); if(P&&UI.league&&["groupes","live"].includes(UI.tab)) await loadLeague(UI.league); render(true);},30000);
+}
+function readHash(){
+  const h=decodeURIComponent(location.hash.slice(1));
+  UI.admin=h==="admin";
+  const m=h.match(/^rejoindre-([A-Za-z]+-\d{4})$/); if(m){pendingJoin=m[1].toUpperCase();UI.tab="groupes";}
+}
+window.addEventListener("hashchange",()=>{readHash();if(pendingJoin&&P) doJoin(pendingJoin).then(()=>render());else render();});
+
+/* ===================== VUES ===================== */
+const TABS=[["groupes","👯","Groupes"],["noter","⭐","Noter"],["top","🏆","Mon top"],["prono","🔮","Prono"],["live","📺","Live"]];
+function render(soft){
+  const app=document.getElementById("app"), nav=document.getElementById("navbar");
+  if(UI.admin){nav.style.display="none";app.innerHTML=vAdmin();return;}
+  if(!P){nav.style.display="none";app.innerHTML=vWelcome();return;}
+  if(soft&&document.activeElement&&document.activeElement.tagName==="INPUT") return;
+  nav.style.display="";
+  document.getElementById("nav").innerHTML=TABS.map(t=>`<button data-a="tab" data-v="${t[0]}" class="${UI.tab===t[0]?"on":""}"><span class="i">${t[1]}</span>${t[2]}</button>`).join("");
+  const head=`<header><div class="logo">L'<span>Élue</span></div>
+    <button class="me" data-a="tab" data-v="profil"><span class="av">${esc(P.emoji)}</span>${esc(P.name)}<span class="sync" id="sync">${UI.syncing?"…":"✓"}</span></button></header>`;
+  const lock=R.votes_locked&&["noter","prono","top"].includes(UI.tab)?`<div class="lock">🔒 Les votes sont fermés : place au show ! Suis les résultats dans l'onglet Live.</div>`:"";
+  const views={groupes:vGroupes,noter:vNoter,top:vTop,prono:vProno,live:vLive,profil:vProfil};
+  app.innerHTML=head+lock+(views[UI.tab]||vGroupes)();
+}
+
+function vWelcome(){
+  if(UI.welcome==="recover") return `<div class="welcome"><div class="logo" style="font-size:34px">L'<span>Élue</span></div>
+    <div class="box"><h3 style="margin-top:0">🔑 Retrouver mon profil</h3><div class="sub">Tape le code perso que l'appli t'a donné (il est dans ton profil sur ton ancien téléphone).</div>
+    <form id="frecover"><input class="field code" id="rcode" placeholder="ABCD-EFGH" maxlength="9" autocomplete="off"><button class="btn gold wide" style="margin-top:10px">Retrouver mon profil</button></form>
+    <p style="margin-top:12px;text-align:center"><button class="link" data-a="welcome" data-v="new">← Je suis nouvelle</button></p></div></div>`;
+  return `<div class="welcome"><div style="font-size:44px">👑</div><h1>L'<span style="font-style:italic;color:var(--gold)">Élue</span></h1>
+    <div class="sub">Note les candidates, fais ton prono, joue avec tes copines et compare-toi à toute la France.<br>Élection le ${ELECTION}.</div>
+    ${pendingJoin?`<div class="note">Tu as été invitée dans le groupe <b>${esc(pendingJoin)}</b> 🎉 Crée ton profil et tu y seras directement.</div>`:""}
+    <div class="box"><h3 style="margin-top:0">Ton prénom ou pseudo</h3>
+      <form id="fwelcome"><input class="field" id="wname" maxlength="20" placeholder="Ex : Léa" autocomplete="off">
+      <div class="det" style="margin-top:12px">Ton emoji</div>
+      <div class="emojis">${EMOJIS.map(e=>`<button type="button" data-a="wemoji" data-v="${e}" class="${UI.emoji===e?"on":""}">${e}</button>`).join("")}</div>
+      <button class="btn gold wide">C'est parti ✨</button></form>
+      <div class="det" style="margin-top:10px">Pas de compte, pas d'e-mail. Ton profil est enregistré sur ce téléphone.</div>
+    </div>
+    <p><button class="link" data-a="welcome" data-v="recover">J'ai déjà un profil (code perso)</button></p></div>`;
+}
+
+function vGroupes(){
+  const L=LEAGUES.find(l=>l.id===UI.league);
+  let html=`<h2>Mes groupes</h2>`;
+  if(!LEAGUES.length) html+=`<div class="sub">Crée un groupe et partage le code à tes copines, ou rejoins le leur. Tu peux aussi jouer solo : tu seras quand même comparée à toute la France 🇫🇷</div>`;
+  else html+=`<div class="box">${LEAGUES.map(l=>`<button class="grp" data-a="league" data-v="${l.id}"><div class="av">👯</div><div class="grow"><b>${esc(l.name)}</b><div class="det">${l.members} joueuse${l.members>1?"s":""} · code ${esc(l.code)}</div></div>${l.id===UI.league?`<span class="pill ok">ouvert</span>`:"›"}</button>`).join("")}</div>`;
+  if(L){
+    const ps=(LP[L.id]||[]).map(p=>p.id===P.id?P:p);
+    const board=ps.map(p=>({p,...score(p)})).sort((a,b)=>b.total-a.total||a.p.name.localeCompare(b.p.name));
+    const gt=groupTop(ps).slice(0,5);
+    html+=`<h3>👯 ${esc(L.name)}</h3>
+    <div class="box"><div class="det">Code du groupe</div><div class="bigcode">${esc(L.code)}</div>
+      <button class="btn gold wide" data-a="share" data-v="${L.id}">📲 Inviter des copines</button></div>
+    <div class="box"><h3 style="margin-top:0">🏆 Classement du groupe</h3>
+      ${board.map((x,i)=>`<div class="lb ${x.p.id===P.id?"mine":""}"><div class="av">${i===0&&x.total>0?"🥇":esc(x.p.emoji)}</div><div class="grow"><b>${esc(x.p.name)}</b>
+        <div class="det">${CANDS.filter(c=>done(x.p,c.id)).length}/31 notées · prono ${x.p.prono?.order?.[0]?"✓":"à faire"}${resultsStarted()?` · télé ${x.tele} · France ${x.accord}`:""}</div></div><div class="tot">${x.total}</div></div>`).join("")}
+      ${!resultsStarted()?`<div class="note">Les points tombent le soir de l'élection. En attendant, on voit qui a fini ses notes 👀</div>`:""}</div>
+    ${gt.length?`<div class="box"><h3 style="margin-top:0">💖 Le top 5 du groupe</h3>${gt.map((x,i)=>rkRow(i,x.id,x.pts+" pts")).join("")}</div>`:""}
+    <div style="text-align:center"><button class="btn sm ghost" data-a="leave" data-v="${L.id}" style="color:var(--bad)">Quitter ce groupe</button></div>`;
+  }
+  html+=`<div class="box"><h3 style="margin-top:0">➕ Créer un groupe</h3>
+    <form id="fcreate" class="row"><input class="field grow" id="lname" maxlength="30" placeholder="Nom (ex : Les Miss du canap')"><button class="btn gold">Créer</button></form>
+    <div class="det" style="margin-top:6px">Le code est créé automatiquement, il est unique.</div></div>
+  <div class="box"><h3 style="margin-top:0">🔑 Rejoindre un groupe</h3>
+    <form id="fjoin" class="row"><input class="field grow code" id="jcode" maxlength="12" placeholder="ROSE-1234" autocomplete="off"><button class="btn">Rejoindre</button></form></div>
+  <div class="box"><h3 style="margin-top:0">🎯 Comment on gagne des points</h3><ul class="rules">
+    <li><b>Prono télé :</b> 1 pt par candidate du top 15 trouvée, 3 pts par finaliste du top 5, <b>10 pts</b> pour Miss France, +2 par dauphine au bon rang.</li>
+    <li><b>D'accord avec la France :</b> ton top 5 perso est comparé à celui de toutes les joueuses de l'appli. 2 pts par candidate en commun, +1 si même rang, +5 si ton coup de cœur ❤️ est la n°1 de la France.</li></ul></div>`;
+  return html;
+}
+function rkRow(i,id,val){const c=BY[id];if(!c)return"";return `<div class="rk p${i+1}"><div class="pos">${i+1}</div><div class="grow"><b>Miss ${c.region}</b>${P&&P.coeur===id?" ❤️":""}<div class="det">${c.name}</div></div><span class="val">${val}</span></div>`;}
+
+function vNoter(){
+  const cr=critsOf(P), nDone=CANDS.filter(c=>done(P,c.id)).length;
+  if(!cr.length) return `<div class="empty"><div class="big">🤔</div>Aucun critère activé.<br><br><button class="btn gold" data-a="tab" data-v="profil">Choisir mes critères</button></div>`;
+  let list=CANDS.filter(c=>UI.filter==="all"||(UI.filter==="todo"?!done(P,c.id):done(P,c.id)));
+  if(UI.q){const q=UI.q.toLowerCase();list=list.filter(c=>(c.region+" "+c.name).toLowerCase().includes(q));}
+  return `<h2>Noter les candidates</h2><div class="sub">${nDone}/31 notées · <button class="link" data-a="tab" data-v="profil">changer mes critères</button></div>
+  <div class="prog"><i style="width:${nDone/31*100}%"></i></div>
+  <input class="field" id="q" placeholder="Chercher une région ou un prénom…" value="${esc(UI.q)}" style="margin-top:10px">
+  <div class="seg" style="margin:8px 0 4px"><button data-a="filter" data-v="all" class="${UI.filter==="all"?"on":""}">Toutes</button><button data-a="filter" data-v="todo" class="${UI.filter==="todo"?"on":""}">À noter</button><button data-a="filter" data-v="done" class="${UI.filter==="done"?"on":""}">Notées</button></div>
+  ${list.map(c=>candCard(c,cr)).join("")||`<div class="empty">Rien ici 👀</div>`}`;
+}
+function candCard(c,cr){
+  const s=avg(P,c.id),open=UI.open===c.id,n=(P.notes||{})[c.id]||{};
+  const q=encodeURIComponent(`Miss ${c.region} 2026 ${c.name} instagram`);
+  return `<div class="cand ${open?"open":""}"><div class="row"><button class="chead" data-a="open" data-v="${c.id}">
+     <div class="num">${c.n}</div><div class="grow"><div class="cname">Miss ${c.region}</div><div class="creg">${c.name} · ${c.age} ans</div></div>
+     <div class="score">${s!==null?`<b>${s.toFixed(1)}</b><small>${done(P,c.id)?"/10":"en cours"}</small>`:`<small>à noter</small>`}</div></button>
+     <button class="heart ${P.coeur===c.id?"on":""}" data-a="coeur" data-v="${c.id}" aria-label="Coup de cœur">❤️</button></div>
+   ${open?`<div class="cbody">${cr.map(k=>`<div class="crit"><div class="lab"><span>${k.label}</span><span>${typeof n[k.id]==="number"?n[k.id]+"/10":""}</span></div>
+     <div class="notes">${[1,2,3,4,5,6,7,8,9,10].map(v=>`<button data-a="note" data-c="${c.id}" data-k="${k.id}" data-v="${v}" class="${n[k.id]===v?"on":(typeof n[k.id]==="number"&&v<n[k.id]?"in":"")}">${v}</button>`).join("")}</div></div>`).join("")}
+     <div class="links"><a href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener">📸 Voir son Insta</a>${done(P,c.id)?`<button class="btn sm gold" data-a="next" data-v="${c.id}">Suivante →</button>`:""}</div></div>`:""}</div>`;
+}
+
+function vTop(){
+  const r=ranking(P), ft=F?.ranking||[];
+  let html=`<h2>Mon top</h2>`;
+  if(!r.length) html+=`<div class="empty"><div class="big">⭐</div>Note quelques candidates pour voir ton classement.<br><br><button class="btn gold" data-a="tab" data-v="noter">Commencer à noter</button></div>`;
+  else html+=`<div class="sub">Calculé à partir de tes notes. Ton top 5 compte pour le classement de la France.</div>
+    <div class="box">${P.coeur?`<div class="row"><span style="font-size:22px">❤️</span><div><div class="det">Mon coup de cœur</div><b>Miss ${BY[P.coeur].region}</b> · ${BY[P.coeur].name}</div></div>`:`<div class="det">Pas encore de coup de cœur : touche ❤️ dans l'onglet Noter.</div>`}</div>
+    <div class="box">${r.map((x,i)=>rkRow(i,x.c.id,x.s.toFixed(1))).join("")}</div>
+    <button class="btn wide" data-a="copytop">📋 Copier mon top 5 pour le partager</button>`;
+  html+=`<h3>🇫🇷 Le top 5 de la France</h3>`;
+  html+=ft.length?`<div class="box">${ft.slice(0,5).map((x,i)=>rkRow(i,x.cand,x.voters+" vote"+(x.voters>1?"s":""))).join("")}<div class="det" style="margin-top:8px">Basé sur ${F.voters} joueuse${F.voters>1?"s":""}. Chaque top 5 donne 5-4-3-2-1 points.</div></div>`
+    :`<div class="box det">Pas encore assez de votes. Reviens plus tard !</div>`;
+  return html;
+}
+
+function pickerSection(obj,ns,dis){
+  const c15=obj.top15.length,c5=obj.top5.length,ord=obj.order||obj.ord,cO=ord.filter(Boolean).length,d=dis?"disabled":"";
+  return `<h3>1. Le top 15 <span class="counter ${c15===15?"full":""}">${c15}/15</span></h3>
+  <div class="picks">${CANDS.map(c=>`<button ${d} class="pk ${obj.top15.includes(c.id)?"on":""}" data-a="pick" data-ns="${ns}" data-l="15" data-v="${c.id}">${c.region}</button>`).join("")}</div>
+  <h3>2. Le top 5 <span class="counter ${c5===5?"full":""}">${c5}/5</span></h3>
+  ${c15?`<div class="picks">${obj.top15.map(id=>`<button ${d} class="pk ${obj.top5.includes(id)?"on":""}" data-a="pick" data-ns="${ns}" data-l="5" data-v="${id}">${BY[id].region}</button>`).join("")}</div>`:`<div class="det">Choisis d'abord le top 15.</div>`}
+  <h3>3. Le classement final <span class="counter ${cO===5?"full":""}">${cO}/5</span></h3>
+  ${c5?`<div class="det" style="margin-bottom:6px">Touche les finalistes dans l'ordre, de Miss France à la 4e dauphine.</div>
+  <div class="picks" style="margin-bottom:8px">${obj.top5.map(id=>{const i=ord.indexOf(id);return `<button ${d} class="pk ${i>=0?"on":""}" data-a="pick" data-ns="${ns}" data-l="0" data-v="${id}">${i>=0?`<span class="rkb">${i===0?"👑":i}</span>`:""}${BY[id].region}</button>`}).join("")}</div>
+  <div class="order">${ord.map((id,i)=>`<div class="slot ${id?"f":""}"><span class="t">${ORDER_LABELS[i]}</span><b>${id?"Miss "+BY[id].region:"—"}</b></div>`).join("")}</div>`:`<div class="det">Choisis d'abord le top 5.</div>`}`;
+}
+function vProno(){
+  return `<h2>Mon prono télé</h2><div class="sub">Pas qui tu préfères : qui va <i>vraiment</i> gagner selon toi ? Les votes ferment au début de l'émission.</div>
+  <div class="box">${pickerSection(P.prono||EMPTY_PRONO(),"me",R.votes_locked)}</div>`;
+}
+function vLive(){
+  const s=score(P), ft=franceTop();
+  const wp=(F?.winner_prono||[]), wpTot=wp.reduce((a,b)=>a+b.n,0);
+  let html=`<h2>Live</h2><div class="sub">${resultsStarted()?"Les résultats tombent en direct 🔴":"Rendez-vous le "+ELECTION+" sur TF1 : tout se mettra à jour ici en direct."}</div>
+  <div class="box"><h3 style="margin-top:0">✨ Mes points</h3><div class="stat"><div><b>${s.tele}</b>Prono télé</div><div><b>${s.accord}</b>Accord France</div><div><b>${s.total}</b>Total</div></div>
+    ${resultsStarted()?`<div class="det" style="margin-top:8px">${s.d.t15} du top 15 · ${s.d.t5} du top 5${s.d.win?" · 👑 Miss France trouvée !":""}${s.d.exact?" · "+s.d.exact+" dauphine(s) au bon rang":""}</div>`:""}
+    ${ft.length?`<div class="det" style="margin-top:4px">Accord France : ${s.d.common} en commun avec le top 5 de la France${s.d.same?", "+s.d.same+" au même rang":""}${s.d.coeur?", ton coup de cœur est leur n°1 ❤️":""}</div>`:""}</div>
+  <div class="box"><h3 style="margin-top:0">📺 Résultats officiels</h3>
+    ${R.ord.some(Boolean)?`<div class="order">${R.ord.map((id,i)=>`<div class="slot ${id?"f":""}"><span class="t">${ORDER_LABELS[i]}</span><b>${id?"Miss "+BY[id].region:"…"}</b></div>`).join("")}</div>`:""}
+    ${R.top5.length?`<div class="det" style="margin:8px 0 4px">Top 5</div><div class="picks">${R.top5.map(id=>`<span class="pk on">${BY[id].region}</span>`).join("")}</div>`:""}
+    ${R.top15.length?`<div class="det" style="margin:8px 0 4px">Top 15</div><div class="picks">${R.top15.map(id=>`<span class="pk ${(P.prono?.top15||[]).includes(id)?"on":""}">${BY[id].region}</span>`).join("")}</div><div class="det" style="margin-top:6px">En doré : celles que tu avais trouvées.</div>`:`<div class="det">Pas encore de résultats.</div>`}</div>
+  <div class="box"><h3 style="margin-top:0">🇫🇷 Ce que pense la France</h3>
+    ${F?`<div class="stat"><div><b>${F.players}</b>joueuses</div><div><b>${F.voters}</b>tops envoyés</div></div>
+    ${wp.length?`<div class="det" style="margin:12px 0 4px">Selon la France, Miss France sera…</div>${wp.slice(0,3).map((x,i)=>rkRow(i,x.cand,Math.round(x.n/wpTot*100)+" %")).join("")}`:""}`:`<div class="det">Chargement…</div>`}</div>`;
+  if(LEAGUES.length) html+=`<button class="btn wide" data-a="tab" data-v="groupes">👯 Voir le classement de mon groupe</button>`;
+  return html;
+}
+function vProfil(){
+  return `<h2>Mon profil</h2>
+  <div class="box"><h3 style="margin-top:0">Prénom & emoji</h3><form id="fname" class="row"><input class="field grow" id="pname" maxlength="20" value="${esc(P.name)}"><button class="btn">OK</button></form>
+    <div class="emojis">${EMOJIS.map(e=>`<button data-a="emoji" data-v="${e}" class="${P.emoji===e?"on":""}">${e}</button>`).join("")}</div></div>
+  <div class="box"><h3 style="margin-top:0">📝 Ma façon de noter</h3>
+    <div class="seg"><button data-a="mode" data-v="detail" class="${P.mode!=="global"?"on":""}" ${R.votes_locked?"disabled":""}>Par critères</button><button data-a="mode" data-v="global" class="${P.mode==="global"?"on":""}" ${R.votes_locked?"disabled":""}>Note globale</button></div>
+    ${P.mode!=="global"?`<div style="margin-top:8px">${CRITS.map(c=>`<div class="toggle"><span>${c.label}</span><button class="sw ${(P.crits||[]).includes(c.id)?"on":""}" data-a="crit" data-v="${c.id}" ${R.votes_locked?"disabled":""} aria-label="${c.label}"></button></div>`).join("")}</div>`
+      :`<div class="det" style="margin-top:10px">Une seule note sur 10 par candidate.</div>`}
+    <div class="det" style="margin-top:8px">Tes critères n'influencent que ton propre classement. Le classement de la France compare les top 5, peu importe comment chacune a noté.</div></div>
+  <div class="box"><h3 style="margin-top:0">🔑 Mon code perso</h3><div class="sub">Garde-le précieusement : il te permet de retrouver ton profil sur un autre téléphone.</div>
+    <div class="bigcode" id="rc">${UI.rcode?esc(UI.rcode):`<button class="btn sm" data-a="showcode">Afficher mon code</button>`}</div></div>`;
+}
+
+function vAdmin(){
+  if(!UI.adminPwd) return `<div class="welcome"><div class="logo" style="font-size:30px">L'<span>Élue</span></div><div class="box"><h3 style="margin-top:0">🔐 Espace admin</h3>
+    <form id="fadmin"><input class="field" type="password" id="apwd" placeholder="Mot de passe admin"><button class="btn gold wide" style="margin-top:10px">Entrer</button></form></div></div>`;
+  const r={top15:R.top15,top5:R.top5,order:R.ord};
+  const ft=F?.ranking||[], wp=F?.winner_prono||[], wpTot=wp.reduce((a,b)=>a+b.n,0);
+  return `<header><div class="logo">L'<span>Élue</span></div><span class="pill" style="margin-left:auto">ADMIN</span></header>
+  <div class="box"><div class="toggle"><div><b>🔒 Fermer les votes</b><div class="det">À activer au début de l'émission (ou à l'annonce du top 15).</div></div><button class="sw ${R.votes_locked?"on":""}" data-a="alock"></button></div></div>
+  <div class="box"><h3 style="margin-top:0">📺 Résultats officiels</h3><div class="det">Chaque clic est envoyé en direct sur les téléphones des joueuses.</div>${pickerSection(r,"res",false)}
+    <button class="btn sm ghost" data-a="aclear" style="color:var(--bad);margin-top:12px">Effacer tous les résultats</button></div>
+  <div class="box"><h3 style="margin-top:0">📊 Stats pour tes réseaux</h3>
+    <div class="stat"><div><b>${F?.players??"–"}</b>joueuses</div><div><b>${F?.voters??"–"}</b>tops</div><div><b>${F?.quiz_avg??"–"}</b>quiz /20</div></div>
+    <div class="det" style="margin:12px 0 4px">Top 5 de la France</div>${ft.slice(0,5).map((x,i)=>rkRow(i,x.cand,x.pts+" pts")).join("")||`<div class="det">—</div>`}
+    <div class="det" style="margin:12px 0 4px">La France pense que Miss France sera…</div>${wp.slice(0,5).map((x,i)=>rkRow(i,x.cand,Math.round(x.n/wpTot*100)+" %")).join("")||`<div class="det">—</div>`}
+    <div class="row" style="margin-top:12px"><button class="btn sm" data-a="arefresh">🔄 Actualiser</button><button class="btn sm gold" data-a="acopy">📋 Copier le récap</button></div></div>`;
+}
+
+/* ===================== ACTIONS ===================== */
+function modal(html){document.getElementById("overlay").innerHTML=`<div class="modal" data-a="closemodal"><div class="box">${html}</div></div>`;}
+function closeModal(){document.getElementById("overlay").innerHTML="";}
+function confirmBox(text,ok){modal(`<p style="margin-bottom:14px">${text}</p><div class="row" style="justify-content:flex-end"><button class="btn sm" data-a="closemodal">Annuler</button><button class="btn sm gold" id="cyes">Confirmer</button></div>`);document.getElementById("cyes").onclick=()=>{closeModal();ok();};}
+async function copyText(t){try{await navigator.clipboard.writeText(t);toast("Copié ! 📋");return true;}catch(e){modal(`<p style="margin-bottom:8px">Copie ce texte :</p><textarea class="copyarea" readonly>${esc(t)}</textarea><button class="btn sm" data-a="closemodal" style="margin-top:10px">Fermer</button>`);return false;}}
+function pick(obj,level,id){
+  const ord=obj.order||obj.ord, key=obj.order?"order":"ord";
+  if(level===15){
+    if(obj.top15.includes(id)){obj.top15=obj.top15.filter(x=>x!==id);obj.top5=obj.top5.filter(x=>x!==id);obj[key]=ord.map(x=>x===id?null:x);}
+    else if(obj.top15.length<15) obj.top15=[...obj.top15,id]; else {toast("Déjà 15 sélectionnées");return false;}
+  }else if(level===5){
+    if(!obj.top15.includes(id)) return false;
+    if(obj.top5.includes(id)){obj.top5=obj.top5.filter(x=>x!==id);obj[key]=ord.map(x=>x===id?null:x);}
+    else if(obj.top5.length<5) obj.top5=[...obj.top5,id]; else {toast("Déjà 5 finalistes");return false;}
+  }else{
+    if(!obj.top5.includes(id)) return false;
+    const o=[...ord],i=o.indexOf(id); if(i>=0) o[i]=null; else {const f=o.indexOf(null); if(f<0) return false; o[f]=id;} obj[key]=o;
+  }
+  return true;
+}
+async function doJoin(code){
+  pendingJoin=null; if(location.hash.startsWith("#rejoindre")) history.replaceState(null,"",location.pathname);
+  try{const l=await API.joinLeague(code);toast(`Bienvenue dans « ${l.name} » 🎉`);UI.league=l.id;ls.set("cp-league",l.id);UI.tab="groupes";await refreshLeagues();}
+  catch(e){toast(errMsg(e),true);}
+}
+function locked(){if(R.votes_locked){toast(ERRORS.VOTES_LOCKED,true);return true;}return false;}
+
+document.addEventListener("click",async e=>{
+  const b=e.target.closest("[data-a]"); if(!b||b.disabled) return;
+  const a=b.dataset.a, v=b.dataset.v;
+  switch(a){
+    case "closemodal": if(e.target===b||b.tagName==="BUTTON") closeModal(); return;
+    case "welcome": UI.welcome=v; break;
+    case "wemoji": UI.emoji=v; document.querySelectorAll("[data-a=wemoji]").forEach(x=>x.classList.toggle("on",x.dataset.v===v)); return;
+    case "tab": UI.tab=v; window.scrollTo(0,0); if(v==="live"||v==="top") refreshShared().then(()=>render(true)); break;
+    case "filter": UI.filter=v; break;
+    case "open": UI.open=UI.open===v?null:v; break;
+    case "note": { if(locked()) return; const notes=JSON.parse(JSON.stringify(P.notes||{})); const n=notes[b.dataset.c]||(notes[b.dataset.c]={}); const val=+v;
+      if(n[b.dataset.k]===val) delete n[b.dataset.k]; else n[b.dataset.k]=val; P.notes=notes; patch({notes}); recomputeTop5(); break; }
+    case "next": { const i=CANDS.findIndex(c=>c.id===v); const nx=CANDS.slice(i+1).concat(CANDS.slice(0,i)).find(c=>!done(P,c.id)); UI.open=nx?nx.id:null; if(!nx) toast("Toutes notées 🎉");
+      setTimeout(()=>{const el=document.querySelector(".cand.open"); el&&el.scrollIntoView({behavior:"smooth",block:"start"});},30); break; }
+    case "coeur": if(locked()) return; patch({coeur:P.coeur===v?null:v}); if(P.coeur) toast(`❤️ Coup de cœur : Miss ${BY[v].region}`); break;
+    case "pick": {
+      if(b.dataset.ns==="res"){ const r={top15:[...R.top15],top5:[...R.top5],ord:[...R.ord]}; if(!pick(r,+b.dataset.l,v)) return;
+        Object.assign(R,r); render(); try{await API.adminSetResults(UI.adminPwd,r);}catch(err){toast(errMsg(err),true);} return; }
+      if(locked()) return; const pr=JSON.parse(JSON.stringify(P.prono||EMPTY_PRONO())); if(!pick(pr,+b.dataset.l,v)) return; patch({prono:pr}); break; }
+    case "league": UI.league=v; ls.set("cp-league",v); await loadLeague(v); break;
+    case "share": { const l=LEAGUES.find(x=>x.id===v); const url=location.origin+location.pathname+"#rejoindre-"+l.code;
+      const t=`Rejoins mon groupe « ${l.name} » sur L'Élue 👑\nOn note les candidates et on fait nos pronos avant l'élection !\nCode : ${l.code}\n${url}`;
+      if(navigator.share){try{await navigator.share({text:t});return;}catch(err){}} copyText(t); return; }
+    case "leave": confirmBox("Quitter ce groupe ? Tes notes et ton prono sont conservés.",async()=>{try{await API.leaveLeague(v,P.id);UI.league=null;await refreshLeagues();render();}catch(err){toast(errMsg(err),true);}}); return;
+    case "emoji": patch({emoji:v}); break;
+    case "mode": if(locked()) return; patch({mode:v}); recomputeTop5(); break;
+    case "crit": { if(locked()) return; const c=new Set(P.crits||[]); c.has(v)?c.delete(v):c.add(v); patch({crits:[...c]}); recomputeTop5(); break; }
+    case "showcode": try{UI.rcode=await API.recoveryCode();}catch(err){toast(errMsg(err),true);} break;
+    case "copytop": { const r=ranking(P).slice(0,5); copyText(`Mon top 5 ${P.emoji}\n`+r.map((x,i)=>`${i+1}. Miss ${x.c.region} (${x.s.toFixed(1)})`).join("\n")+(P.coeur?`\n❤️ Coup de cœur : Miss ${BY[P.coeur].region}`:"")+"\n#LElue #MissFrance2027"); return; }
+    case "alock": try{await API.adminSetLock(UI.adminPwd,!R.votes_locked);R.votes_locked=!R.votes_locked;toast(R.votes_locked?"Votes fermés 🔒":"Votes rouverts");}catch(err){toast(errMsg(err),true);} break;
+    case "aclear": confirmBox("Effacer tous les résultats officiels ?",async()=>{const r={top15:[],top5:[],ord:[null,null,null,null,null]};try{await API.adminSetResults(UI.adminPwd,r);Object.assign(R,r);render();}catch(err){toast(errMsg(err),true);}}); return;
+    case "arefresh": await refreshShared(); toast("À jour"); break;
+    case "acopy": { const ft=(F?.ranking||[]).slice(0,5), wp=F?.winner_prono||[], tot=wp.reduce((a,b)=>a+b.n,0);
+      copyText(`🇫🇷 Le top 5 de la France (${F?.voters||0} joueuses)\n`+ft.map((x,i)=>`${i+1}. Miss ${BY[x.cand].region}`).join("\n")+(wp.length?`\n\n👑 Pour la France, Miss France sera : Miss ${BY[wp[0].cand].region} (${Math.round(wp[0].n/tot*100)} %)`:"")+"\n#LElue"); return; }
+  }
+  render();
+});
+document.addEventListener("submit",async e=>{
+  e.preventDefault(); const id=e.target.id, btn=e.target.querySelector("button:not([type=button])"); if(btn) btn.disabled=true;
+  try{
+    if(id==="fwelcome"){ const name=document.getElementById("wname").value.trim(); if(!name){toast("Choisis un prénom 😉");return;}
+      if(!await API.session()) await API.signIn(); P=await API.myProfile()||await API.createProfile(name,UI.emoji);
+      await refreshLeagues(); if(pendingJoin) await doJoin(pendingJoin); toast(`Bienvenue ${P.name} ${P.emoji}`); render(); }
+    if(id==="frecover"){ const code=document.getElementById("rcode").value.trim(); if(!code) return;
+      if(!await API.session()) await API.signIn(); await API.recover(code); P=await API.myProfile(); await refreshLeagues(); toast(`Re-bonjour ${P.name} ${P.emoji}`); render(); }
+    if(id==="fcreate"){ const l=await API.createLeague(document.getElementById("lname").value.trim()); UI.league=l.id; ls.set("cp-league",l.id); await refreshLeagues(); render(); toast(`Groupe créé : ${l.code} 🎉`); }
+    if(id==="fjoin"){ const code=document.getElementById("jcode").value.trim(); if(code){await doJoin(code); render();} }
+    if(id==="fname"){ const name=document.getElementById("pname").value.trim(); if(name){patch({name}); toast("Prénom modifié"); render();} }
+    if(id==="fadmin"){ const pwd=document.getElementById("apwd").value; if(await API.adminCheck(pwd)){UI.adminPwd=pwd; await refreshShared(); render();} else toast(ERRORS.NOT_ADMIN,true); }
+  }catch(err){toast(errMsg(err),true);}
+  finally{if(btn&&document.body.contains(btn)) btn.disabled=false;}
+});
+document.addEventListener("input",e=>{
+  if(e.target.id==="q"){UI.q=e.target.value;const pos=e.target.selectionStart;render();const q=document.getElementById("q");q.focus();q.setSelectionRange(pos,pos);}
+});
+document.addEventListener("visibilitychange",async()=>{if(!document.hidden&&P){await refreshShared();if(UI.league) await loadLeague(UI.league);render(true);}});
+boot();
+</script>
+</body>
+</html>
