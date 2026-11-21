@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>L'Élue · Admin</title>
+<meta name="description" content="Note les candidates, fais ton classement et compare-toi à tes copines et à toute la France.">
+<meta name="theme-color" content="#1B0E22">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Admin">
+<link rel="icon" type="image/png" href="/icons/admin-favicon-48.png">
+<link rel="apple-touch-icon" href="/icons/admin-180.png">
+<link rel="manifest" href="/admin/manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500;1,6..96,700&family=Cormorant+Garamond:ital,wght@1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--nuit:#1B0E22;--velours:#2A1434;--ivoire:#FBF3E6;--brume:#C9B6CF;--or:#E9BF62;--or2:#C8932F;--line:rgba(233,191,98,.18);--card:rgba(255,255,255,.045);--ok:#9FE3BF;--bad:#FF9A9A;--r:18px}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--nuit)}
+body{color:var(--ivoire);font-family:"Jost",system-ui,sans-serif;font-weight:300;font-size:16px;line-height:1.45;min-height:100vh;padding-bottom:96px;background:var(--nuit)}
+body.dragging{user-select:none;-webkit-user-select:none}
+#bg{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(120% 60% at 50% 0%,#4A2157 0%,#2A1434 40%,#1B0E22 78%)}
+#bg .beam{position:absolute;top:-40px;width:190px;height:620px;transform-origin:50% 0;filter:blur(10px);clip-path:polygon(44% 0,56% 0,100% 100%,0 100%);background:linear-gradient(180deg,rgba(255,236,190,.26),rgba(255,236,190,0) 85%)}
+#bg .beam.l{left:calc(50% - 215px);animation:swayL 9s ease-in-out infinite}#bg .beam.r{right:calc(50% - 215px);animation:swayR 11s ease-in-out infinite}
+@keyframes swayL{0%,100%{transform:rotate(18deg)}50%{transform:rotate(4deg)}}
+@keyframes swayR{0%,100%{transform:rotate(-18deg)}50%{transform:rotate(-5deg)}}
+#bg canvas{position:absolute;inset:0;width:100%;height:100%}
+#app{position:relative;z-index:1}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.5}
+input{font:inherit;color:inherit}
+a{color:var(--or)}
+.wrap{max-width:560px;margin:0 auto;padding:0 20px}
+.shine{background:linear-gradient(100deg,#B8862F 0%,#F6DA8E 38%,#FFF8E1 50%,#F6DA8E 62%,#B8862F 100%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:tshine 5.5s ease-in-out infinite}
+@keyframes tshine{0%{background-position:100% 0}100%{background-position:-60% 0}}
+.goldtx{background:linear-gradient(180deg,#FFF3C9 0%,#F2CF7E 40%,#C8932F 65%,#F6DC92 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+header{padding:14px 0 6px;display:flex;align-items:center;gap:8px}
+.brand{display:flex;align-items:center;gap:8px}
+.brand img{width:34px;height:auto;filter:drop-shadow(0 0 6px rgba(246,218,142,.35))}
+.logo{font:italic 700 26px/1.3 "Bodoni Moda",serif;padding-top:2px}
+.me{margin-left:auto;display:flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-weight:400;font-size:14px}
+.me .av{width:28px;height:28px;font-size:15px}
+.sync{font-size:11px;color:var(--brume);min-width:12px;text-align:right}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:10;background:linear-gradient(180deg,rgba(27,14,34,0),rgba(27,14,34,.94) 30%)}
+nav .wrap{display:flex;justify-content:space-between;padding:16px 4px 14px}
+nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11.5px;color:var(--brume);padding:4px 0;position:relative}
+nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5}
+nav button.on{color:var(--ivoire)}
+nav button.on::after{content:"";position:absolute;bottom:-6px;width:18px;height:2px;border-radius:2px;background:linear-gradient(90deg,#C8932F,#F6DA8E,#C8932F)}
+nav button.on svg{stroke:var(--or)}
+h1{font:italic 700 40px/1.15 "Bodoni Moda",serif;margin:8px 0}
+h2{font:italic 700 32px/1.25 "Bodoni Moda",serif;margin:26px 0 4px;padding-top:4px}
+h3{font:italic 700 21px/1.3 "Bodoni Moda",serif;margin:16px 0 8px;display:flex;align-items:center;gap:8px}
+.sub{color:var(--brume);font-size:15px;margin-bottom:12px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin:12px 0}
+.box>h3:first-child{margin-top:0}
+.row{display:flex;gap:8px;align-items:center}
+.grow{flex:1;min-width:0}
+.btn{padding:11px 16px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(233,191,98,.4);font-weight:400;color:var(--ivoire)}
+.btn.gold,.cta{position:relative;overflow:hidden;isolation:isolate;border:0;color:#2A1606;font-weight:500;
+  background:linear-gradient(135deg,#B8862F 0%,#F6DC92 28%,#FFF1C8 40%,#D9A84A 62%,#F2D184 82%,#C8932F 100%);
+  box-shadow:0 10px 28px rgba(233,191,98,.2),inset 0 1px 0 rgba(255,255,255,.7),inset 0 -2px 0 rgba(120,80,20,.35)}
+.btn.gold::after,.cta::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:35%;z-index:-1;transform:skewX(-20deg);
+  background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,255,255,.55),rgba(255,255,255,0));animation:sweep 5s ease-in-out infinite}
+@keyframes sweep{0%,60%{left:-60%}100%{left:130%}}
+.cta{display:block;width:100%;border-radius:16px;padding:20px 22px;text-align:center;margin:24px 0 6px}
+.cta b{display:block;font:italic 700 26px/1.15 "Bodoni Moda",serif;color:#2A1606}
+.cta small{display:block;font:400 14px "Jost";color:#4A2E10;margin-top:5px}
+.btn.sm{padding:7px 12px;font-size:14px;border-radius:12px}
+.btn.ghost{background:transparent;border-color:transparent}
+.btn.wide{width:100%}
+.btn.danger{color:var(--bad);border-color:rgba(255,154,154,.35)}
+.field{width:100%;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--line);outline:none;color-scheme:dark;font-weight:400}
+.field::placeholder{color:#9C87A3}
+.field:focus{border-color:var(--or)}
+.field.code{text-transform:uppercase;letter-spacing:1px;font-weight:500}
+.toggle{display:flex;align-items:center;justify-content:space-between;padding:12px 2px;border-bottom:1px solid var(--line);gap:10px}
+.toggle:last-child{border-bottom:0}
+.sw{width:46px;height:27px;border-radius:999px;background:rgba(255,255,255,.14);position:relative;transition:.2s;flex:0 0 auto}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:.2s}
+.sw.on{background:linear-gradient(135deg,#C8932F,#F2D184)} .sw.on::after{left:22px}
+.seg{display:flex;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:14px;padding:4px;gap:4px}
+.seg button{flex:1;padding:9px;border-radius:10px;font-weight:400;font-size:14px;color:var(--brume)}
+.seg button.on{background:rgba(233,191,98,.16);color:var(--ivoire)}
+.av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:rgba(233,191,98,.14);border:1px solid var(--line);font-size:18px;flex:0 0 auto}
+.emojis{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.emojis button{width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.05);font-size:20px;border:1px solid var(--line)}
+.emojis button.on{border-color:var(--or);background:rgba(233,191,98,.16)}
+/* héros : miroir de loge */
+.hero{position:relative;margin:6px auto 0;padding:12px;border-radius:190px 190px 22px 22px;max-width:420px}
+.hero .glass{position:relative;border-radius:178px 178px 14px 14px;padding:58px 16px 8px;text-align:center;background:radial-gradient(80% 55% at 50% 20%,rgba(255,226,170,.16),rgba(255,226,170,0) 72%)}
+.hero .hello{font:300 15px "Jost";color:var(--brume);margin-bottom:2px}
+.hero h1{font:italic 700 68px/1.2 "Bodoni Moda",serif;margin:0 0 4px;padding-top:6px}
+.hero .tag{font:italic 400 20px/1.3 "Cormorant Garamond",serif;color:#E9DCEB}
+.bulbs{position:absolute;inset:0;pointer-events:none;z-index:2}
+.bulb{position:absolute;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;
+  background:radial-gradient(circle at 36% 30%,#FFFFFF 0%,#FFFFFF 10%,#FFF7E0 24%,#FFE6AE 48%,#F7C878 74%,#E9A94E 100%);
+  box-shadow:0 0 8px 2px rgba(255,226,160,.9),0 0 22px 8px rgba(255,196,110,.45),0 0 46px 16px rgba(255,180,90,.18);opacity:0;transition:opacity .3s,filter .2s,box-shadow .2s}
+.bulb.lit{opacity:1}
+.bulb.dim{filter:brightness(.55) saturate(.8);box-shadow:0 0 4px 1px rgba(255,214,140,.35)}
+.cd{text-align:center;padding:14px 0 4px}
+.cd .lab{font:italic 400 18px "Cormorant Garamond",serif;color:var(--brume)}
+.cd .digits{display:flex;justify-content:center;gap:12px;margin-top:8px}
+.cd .digits div{min-width:52px}
+.cd .digits b{display:block;font:500 40px/1.1 "Bodoni Moda",serif;color:var(--ivoire);font-variant-numeric:lining-nums tabular-nums}
+.cd .digits small{font-size:12px;color:var(--brume)}
+.steps{display:flex;gap:6px;margin:16px 0 6px}
+.steps div{flex:1;text-align:center;padding:9px 4px;border-radius:14px;background:var(--card);font-size:12px;color:var(--brume);border:1px solid var(--line)}
+.steps div b{display:block;font:italic 700 16px "Bodoni Moda",serif;color:var(--ivoire)}
+.steps div.cur{border-color:var(--or);background:rgba(233,191,98,.10)}
+.steps div.cur b{color:var(--or)}
+.steps div.done b{color:var(--ok)}
+/* notes */
+.cand{background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin:9px 0;overflow:hidden}
+.cand.open{border-color:rgba(233,191,98,.55)}
+.chead{display:flex;align-items:center;gap:12px;padding:12px 14px;width:100%;text-align:left}
+.num{width:38px;height:38px;border-radius:12px;background:rgba(233,191,98,.10);display:grid;place-items:center;font:700 16px "Bodoni Moda",serif;color:var(--or);flex:0 0 auto}
+.cname{font-weight:400;font-size:16.5px;display:flex;align-items:center;gap:6px} .creg{color:var(--brume);font-size:13px}
+.score{margin-left:auto;text-align:right;flex:0 0 auto}
+.score b{font:500 22px "Bodoni Moda",serif;color:var(--or)}
+.score small{display:block;color:var(--brume);font-size:11px}
+.heart{padding:6px;flex:0 0 auto;margin-right:10px;color:#7E6585}
+.heart svg{width:22px;height:22px;display:block;fill:none;stroke:currentColor;stroke-width:1.6}
+.heart.on{color:#F2B8C8}.heart.on svg{fill:currentColor}
+.tiny{width:20px;height:auto;vertical-align:middle;filter:drop-shadow(0 0 4px rgba(246,218,142,.4))}
+.cbody{padding:2px 14px 14px;border-top:1px solid var(--line)}
+.crit{margin-top:12px}
+.crit .lab{font-size:13px;color:var(--brume);margin-bottom:6px;display:flex;justify-content:space-between}
+.notes{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
+.notes button{height:34px;border-radius:9px;background:rgba(255,255,255,.06);font-weight:400;font-size:14px}
+.notes button.on{background:linear-gradient(135deg,#C8932F,#F6DC92 50%,#D9A84A);color:#2A1606;font-weight:500}
+.notes button.in{background:rgba(233,191,98,.22)}
+.links{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center}
+.links a{font-size:13px;text-decoration:none;padding:7px 12px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--ivoire)}
+.prog{height:4px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin:6px 0 2px}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,#C8932F,#F6DA8E)}
+/* classement */
+.rank{list-style:none;margin:6px 0}
+.rank li{display:flex;align-items:center;gap:10px;padding:9px 8px 9px 10px;margin:6px 0;background:var(--card);border:1px solid var(--line);border-radius:16px;touch-action:pan-y;-webkit-touch-callout:none}
+.rank li.in{border-color:rgba(233,191,98,.38);background:linear-gradient(90deg,rgba(233,191,98,.10),rgba(255,255,255,.035) 60%)}
+.rank li .pos{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;font:700 18px "Bodoni Moda",serif;color:var(--brume);flex:0 0 auto}
+.rank li.in .pos{color:var(--or)}
+.rank li b{font-weight:400}
+.rank li .handle{width:40px;height:40px;display:grid;place-items:center;color:#9C87A3;touch-action:none;flex:0 0 auto;cursor:grab}
+.rank li .handle svg{width:20px;height:20px;fill:currentColor}
+.rank li.ghost{position:fixed;z-index:50;box-shadow:0 14px 40px rgba(0,0,0,.55);border-color:var(--or);background:#3A1F44;transform:scale(1.02);pointer-events:none}
+.rank .ph{height:56px;margin:6px 0;border-radius:16px;border:2px dashed rgba(233,191,98,.5);list-style:none}
+.rank li.cut{display:block;background:none;border:0;border-top:1px solid rgba(233,191,98,.5);border-radius:0;padding:10px 0;margin:10px 0;text-align:center;font:italic 400 18px "Cormorant Garamond",serif;color:var(--or)}
+.mk{font-size:11px;font-weight:500;padding:3px 8px;border-radius:999px;background:rgba(159,227,191,.14);color:var(--ok);flex:0 0 auto}
+.rk{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.rk:last-child{border-bottom:0}
+.rk .pos{width:28px;font:700 20px "Bodoni Moda",serif;color:var(--brume);text-align:center;flex:0 0 auto}
+.rk.p1 .pos,.rk.p2 .pos,.rk.p3 .pos{color:var(--or)}
+.rk b{font-weight:400}
+.rk .val{color:var(--or);font-weight:500;flex:0 0 auto}
+.picks{display:flex;flex-wrap:wrap;gap:6px}
+.pk{padding:7px 11px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);font-size:13px}
+.pk.on{background:rgba(233,191,98,.18);border-color:var(--or);color:#FFE9B5}
+.pk .rkb{display:inline-block;min-width:16px;margin-right:4px;font-weight:600;color:var(--or)}
+.counter{margin-left:auto;font:400 13px "Jost";color:var(--brume)} .counter.full{color:var(--ok)}
+.lb{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+.lb:last-child{border-bottom:0}
+.lb.mine{background:rgba(233,191,98,.08);margin:0 -16px;padding:11px 16px}
+.lb b{font-weight:400}
+.lb .tot{margin-left:auto;font:500 24px "Bodoni Moda",serif;color:var(--or)}
+.det{font-size:12.5px;color:var(--brume)}
+.pill{display:inline-block;font-size:11.5px;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.07);color:var(--brume);font-weight:400}
+.pill.ok{background:rgba(159,227,191,.14);color:var(--ok)} .pill.gold{background:rgba(233,191,98,.14);color:var(--or)}
+.empty{text-align:center;color:var(--brume);padding:30px 10px}
+.note{font-size:14px;color:#E9DCEB;background:rgba(233,191,98,.07);border:1px solid rgba(233,191,98,.25);padding:12px 14px;border-radius:14px;margin:10px 0}
+.lock{font-size:14px;background:rgba(255,154,154,.08);border:1px solid rgba(255,154,154,.3);color:#FFD6D6;padding:12px 14px;border-radius:14px;margin:10px 0}
+.bigcode{font:500 32px "Bodoni Moda",serif;letter-spacing:2px;text-align:center;padding:12px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:14px;margin:8px 0;color:var(--or)}
+.grp{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);width:100%;text-align:left}
+.grp:last-child{border-bottom:0}
+.grp b{font-weight:400}
+.stat{display:flex;gap:10px}
+.stat>div{flex:1;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:14px;padding:12px 8px;text-align:center;font-size:13px;color:var(--brume)}
+.stat b{display:block;font:500 30px/1.1 "Bodoni Moda",serif;color:var(--or)}
+.rules{width:100%;border-collapse:collapse;font-size:13.5px}
+.rules th{text-align:left;color:var(--brume);font-weight:400;padding:6px 4px;border-bottom:1px solid var(--line)}
+.rules td{padding:9px 4px;border-bottom:1px solid var(--line);vertical-align:top}
+.rules tr:last-child td{border-bottom:0}
+.rules b{color:var(--or);font-weight:500}
+details summary{cursor:pointer;font:italic 700 20px "Bodoni Moda",serif;list-style:none;display:flex;justify-content:space-between;align-items:center}
+details summary::-webkit-details-marker{display:none}
+details summary::after{content:"+";color:var(--or);font:300 24px "Jost"}
+details[open] summary::after{content:"–"}
+.modal{position:fixed;inset:0;background:rgba(10,4,16,.7);backdrop-filter:blur(4px);display:grid;place-items:center;z-index:60;padding:20px}
+.modal .box{max-width:380px;width:100%;background:#2A1434;border-color:rgba(233,191,98,.35)}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:linear-gradient(135deg,#C8932F,#F6DC92 50%,#D9A84A);color:#2A1606;padding:10px 18px;border-radius:999px;font-weight:500;font-size:14px;z-index:70;box-shadow:0 8px 24px rgba(0,0,0,.4);max-width:90vw;text-align:center}
+.toast.err{background:#C45B6B;color:#fff}
+.welcome{padding-top:10px;text-align:center}
+.welcome .box{text-align:left}
+.link{color:var(--or);text-decoration:underline;text-underline-offset:3px;font-size:14px}
+.copyarea{width:100%;min-height:90px;padding:10px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--ivoire);font:inherit;font-size:13px}
+.qopt{display:block;width:100%;text-align:left;padding:15px 16px;margin:9px 0;border-radius:16px;background:var(--card);border:1px solid var(--line);font-size:16px;font-weight:400}
+.qopt.on{border-color:var(--or);background:rgba(233,191,98,.14)}
+.qopt.good{border-color:var(--ok);background:rgba(159,227,191,.08)} .qopt.bad{border-color:var(--bad);background:rgba(255,154,154,.07)}
+.qnote{font:500 76px/1 "Bodoni Moda",serif;text-align:center}
+.qnote small{font-size:28px;color:var(--brume)}
+.testcard{display:block;width:100%;text-align:center;padding:24px 18px;border-radius:20px;background:var(--card);border:1px solid rgba(233,191,98,.3);margin:12px 0}
+.testcard b{display:block;font:italic 700 25px/1.2 "Bodoni Moda",serif;padding-top:3px}
+.testcard span{display:block;font-size:14px;color:var(--brume);margin-top:6px}
+.storyprev{width:100%;border-radius:12px;display:block;margin-bottom:10px}
+/* écran de chargement */
+#splash{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(120% 60% at 50% 30%,#4A2157 0%,#2A1434 45%,#1B0E22 85%);transition:opacity .6s}
+#splash.out{opacity:0;pointer-events:none}
+#splash .tia{position:relative;width:min(62vw,280px)}
+#splash .tia img{width:100%;display:block;filter:drop-shadow(0 0 24px rgba(246,218,142,.3));animation:rise 1.1s cubic-bezier(.2,.7,.2,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+#splash .tw{position:absolute;width:30px;height:30px;margin:-15px 0 0 -15px;opacity:0;animation:tw 2.4s ease-in-out infinite}
+#splash .tw::before,#splash .tw::after{content:"";position:absolute;left:50%;top:50%;background:#fff;border-radius:2px;transform:translate(-50%,-50%)}
+#splash .tw::before{width:2px;height:100%}#splash .tw::after{width:100%;height:2px}
+#splash .tw i{position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px;border-radius:50%;background:#fff;box-shadow:0 0 12px 4px rgba(255,255,255,.8)}
+@keyframes tw{0%,100%{opacity:0;transform:scale(.3) rotate(0)}40%{opacity:1;transform:scale(1) rotate(20deg)}70%{opacity:0;transform:scale(.4) rotate(40deg)}}
+#splash .nm{font:italic 700 58px/1.25 "Bodoni Moda",serif;margin-top:10px;padding-top:6px;animation:rise 1.1s .25s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="bg" aria-hidden="true"><div class="beam l"></div><div class="beam r"></div><canvas id="glitter"></canvas></div>
+<div id="splash" aria-hidden="true"><div class="tia"><img src="/icons/diademe.webp" alt="">
+<span class="tw" style="left:50%;top:9%;animation-delay:.3s"><i></i></span><span class="tw" style="left:50%;top:53%;animation-delay:.9s"><i></i></span>
+<span class="tw" style="left:70%;top:54%;animation-delay:1.4s"><i></i></span><span class="tw" style="left:30%;top:54%;animation-delay:1.9s"><i></i></span>
+<span class="tw" style="left:82%;top:66%;animation-delay:.6s"><i></i></span><span class="tw" style="left:18%;top:66%;animation-delay:1.2s"><i></i></span></div>
+<div class="nm shine">L'Élue</div></div>
+<div class="wrap" id="app"></div>
+<nav id="navbar" style="display:none"><div class="wrap" id="nav"></div></nav>
+<div id="overlay"></div>
+
+<script>window.FORCE_ADMIN=true;</script>
+<script>
+/* ===================== CONFIG ===================== */
+const SUPABASE_URL = "https://hjmreiccdcrrdnwmnnye.supabase.co";
+const SUPABASE_KEY = "sb_publishable_MAqip45XAF55N-By7v8kqw_DdcsjBvj";
+const SITE = "lelue-app.netlify.app";
+
+/* ===================== DONNÉES ===================== */
+const CANDS = [
+ ["Alsace","Chiara Blazevic",24],["Aquitaine","Solène Videau",22],["Auvergne","Lina Berthelier",24],
+ ["Bretagne","Margot Ferré-Bernard",20],["Bourgogne","Ilona Perrot",23],["Centre-Val de Loire","Justine Bourrelier",26],
+ ["Champagne-Ardenne","Céline Leduc",23],["Corse","Satine Nomary",20],["Côte d'Azur","May Haoues",19],
+ ["Franche-Comté","Emma Ninot",21],["Guyane","Sandra Justine",23],["Guadeloupe","Julia Désirée",20],
+ ["Île-de-France","Camilla Alash",24],["Languedoc","Candice Gauch",29],["Limousin","Élise Escuriol",22],
+ ["Lorraine","Léane Froment",21],["Martinique","Maureen-Alycia Lucea-Merlin",24],["Mayotte","Emma Saïd Issouf",24],
+ ["Midi-Pyrénées","Carla Rachail",23],["Nouvelle-Calédonie","Lana Prost",18],["Nord-Pas-de-Calais","Shana Mendes",18],
+ ["Normandie","Pauline Gourlez",22],["Pays de la Loire","Maëlle Hamon",23],["Picardie","Marie Villez",26],
+ ["Poitou-Charentes","Mandy Goudal",38],["Provence","Ophélie Vitalbo",28],["Réunion","Laetitia Roguet",21],
+ ["Rhône-Alpes","Julia Grid-Costantino",23],["Roussillon","Juliette Gauthier",23],["Saint-Barthélemy","Naïla Parotte",22],
+ ["Tahiti","Leia Diard",22]
+].map((c,i)=>({id:"c"+i,n:i+1,region:c[0],name:c[1],age:c[2]}));
+const BY = Object.fromEntries(CANDS.map(c=>[c.id,c]));
+const CRITS = [
+ {id:"beaute",label:"Beauté & allure"},{id:"defiles",label:"Défilés"},{id:"discours",label:"Discours & présentation"},
+ {id:"video",label:"Portrait vidéo"},{id:"costume",label:"Costume régional"},{id:"culture",label:"Test de culture générale"},
+ {id:"vibe",label:"Charisme"}];
+const EMOJIS = ["👑","💄","✨","🌸","💅","🦋","🍾","💎","🌙","🎀","🔥","🍓","🐚","🌺","🦄","🍒"];
+const MANCHES = {1:{name:"Le top 15",k:15,short:"Top 15"},2:{name:"Le top 5",k:5,short:"Top 5"},3:{name:"La couronne",k:5,short:"Couronne"}};
+const ORDER_LABELS = ["Miss France","1re dauphine","2e dauphine","3e dauphine","4e dauphine"];
+const ERRORS = {NAME_TAKEN:"Ce prénom est déjà pris dans ce groupe : change ton prénom dans ton profil (ex : Léa B.) puis réessaie.",
+  BAD_CODE:"Ce code n'existe pas. Vérifie-le !", VOTES_LOCKED:"Cette manche est fermée", NOT_ADMIN:"Mot de passe incorrect",
+  NO_PROFILE:"Profil introuvable, recharge la page."};
+const ICONS = {
+  jouer:'<svg viewBox="0 0 24 24"><path d="M5 18h14M6 18l-2-10 5 4 3-6 3 6 5-4-2 10"/></svg>',
+  noter:'<svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6 .6-4.5 4 1.3 6-5.4-3.2-5.4 3.2 1.3-6-4.5-4 6-.6z"/></svg>',
+  groupes:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.5"/><path d="M3 19c.6-3.4 3-5 6-5s5.4 1.6 6 5M15 14.5c2.6-.3 4.8 1.1 5.4 4"/></svg>',
+  quiz:'<svg viewBox="0 0 24 24"><path d="M4 5.5C6.5 4 9.5 4 12 6c2.5-2 5.5-2 8-.5V19c-2.5-1.5-5.5-1.5-8 .5-2.5-2-5.5-2-8-.5z"/><path d="M12 6v13.5"/></svg>',
+  resultats:'<svg viewBox="0 0 24 24"><rect x="4" y="12" width="4" height="8" rx="1"/><rect x="10" y="6" width="4" height="14" rx="1"/><rect x="16" y="9" width="4" height="11" rx="1"/></svg>'};
+const GRIP='<svg viewBox="0 0 20 20"><circle cx="7" cy="5" r="1.6"/><circle cx="13" cy="5" r="1.6"/><circle cx="7" cy="10" r="1.6"/><circle cx="13" cy="10" r="1.6"/><circle cx="7" cy="15" r="1.6"/><circle cx="13" cy="15" r="1.6"/></svg>';
+
+/* ===================== QUIZ « FAIS COMME LES MISS » ===================== */
+const QUIZ_REAL_TEST = "https://www.75secondes.fr/tests/culture-generale/80-points-ramenes-sur-20-passe-a-ton-tour-lepreuve-officielle-de-culture-generale-de-miss-france-2027";
+const QUIZ = [
+ // Actualité
+ ["Actualité","En février 2026, les Jeux olympiques d'hiver se sont déroulés en Italie, à Milan et à…",["Turin","Cortina d'Ampezzo","Bolzano","Venise"],1,"Ce sont les JO de Milan-Cortina."],
+ ["Actualité","Avec les États-Unis et le Mexique, quel pays a co-organisé la Coupe du monde de football 2026 ?",["Le Brésil","Le Canada","L'Argentine","Cuba"],1,"Première Coupe du monde organisée par trois pays."],
+ ["Actualité","Quel pays a adopté l'euro au 1er janvier 2026 ?",["La Pologne","La Hongrie","La Bulgarie","La Roumanie"],2,"La Bulgarie est devenue le 21e pays de la zone euro."],
+ ["Actualité","En quelle année aura lieu la prochaine élection présidentielle française ?",["2026","2027","2028","2029"],1,"Elle est prévue au printemps 2027."],
+ ["Actualité","Quel pays est devenu le 32e membre de l'OTAN en 2024 ?",["La Finlande","L'Ukraine","La Suisse","La Suède"],3,"La Suède a rejoint l'OTAN en mars 2024, un an après la Finlande."],
+ ["Actualité","Notre-Dame de Paris a rouvert ses portes en décembre…",["2023","2024","2025","2026"],1,"Cinq ans après l'incendie d'avril 2019."],
+ // Culture web
+ ["Culture web","Sur les réseaux, que signifie « GOAT » ?",["Une chèvre de compagnie","Greatest Of All Time","Go Out And Travel","Good Old Awesome Times"],1,"Le « plus grand de tous les temps »."],
+ ["Culture web","Quelle application a lancé les « stories » en 2013, avant Instagram ?",["Snapchat","TikTok","Facebook","Twitter"],0,"Instagram a repris le principe en 2016."],
+ ["Culture web","Que veut dire « IRL » ?",["In Real Life","I Really Love","Instant Reply Later","International Royal League"],0,"« Dans la vraie vie », par opposition à en ligne."],
+ ["Culture web","À sa création, un tweet était limité à combien de caractères ?",["100","140","200","280"],1,"Passé à 280 caractères en 2017."],
+ // Arts & mode
+ ["Arts & mode","Qui a peint « La Jeune Fille à la perle » ?",["Rembrandt","Johannes Vermeer","Léonard de Vinci","Botticelli"],1,"Un tableau du peintre néerlandais Vermeer, vers 1665."],
+ ["Arts & mode","Quelle maison de mode a pour emblème deux C entrelacés ?",["Céline","Chloé","Chanel","Courrèges"],2,"Le logo créé par Gabrielle « Coco » Chanel."],
+ ["Arts & mode","Quel architecte a imaginé la pyramide du Louvre ?",["Jean Nouvel","Ieoh Ming Pei","Le Corbusier","Renzo Piano"],1,"Inaugurée en 1989."],
+ ["Arts & mode","Qui a composé le célèbre « Boléro » ?",["Claude Debussy","Erik Satie","Maurice Ravel","Georges Bizet"],2,"Créé en 1928."],
+ ["Arts & mode","Qui a écrit « Le Petit Prince » ?",["Jules Verne","Antoine de Saint-Exupéry","Victor Hugo","Albert Camus"],1,"Publié en 1943."],
+ ["Arts & mode","Quel accessoire est indissociable de l'élection : l'écharpe, et…",["Le diadème / la couronne","Le sceptre","La cape","L'éventail"],0,"La couronne de Miss France, posée par la Miss sortante."],
+ // Histoire & citoyenneté
+ ["Histoire & citoyenneté","En quelle année les Françaises ont-elles voté pour la première fois ?",["1918","1936","1945","1968"],2,"Aux municipales d'avril 1945, après l'ordonnance de 1944."],
+ ["Histoire & citoyenneté","Quelle date est celle de la prise de la Bastille ?",["14 juillet 1789","4 août 1789","21 janvier 1793","11 novembre 1918"],0,"Devenue fête nationale en 1880."],
+ ["Histoire & citoyenneté","Combien de temps dure le mandat du président de la République ?",["4 ans","5 ans","6 ans","7 ans"],1,"Le quinquennat existe depuis 2002."],
+ ["Histoire & citoyenneté","Qui a porté l'abolition de la peine de mort en France en 1981 ?",["Simone Veil","Robert Badinter","Jacques Chirac","Charles de Gaulle"],1,"Garde des Sceaux de François Mitterrand."],
+ ["Histoire & citoyenneté","Quelle artiste et résistante est entrée au Panthéon en 2021 ?",["Édith Piaf","Joséphine Baker","Simone Signoret","Dalida"],1,"Première femme noire à y entrer."],
+ ["Histoire & citoyenneté","Combien de pays compte l'Union européenne ?",["25","27","28","30"],1,"27 depuis le départ du Royaume-Uni en 2020."],
+ // Géographie
+ ["Géographie","Quel est le plus haut sommet de France ?",["Le mont Blanc","Le Vignemale","Le mont Ventoux","La Barre des Écrins"],0,"Environ 4 806 mètres."],
+ ["Géographie","Quelle est la capitale de l'Australie ?",["Sydney","Melbourne","Canberra","Perth"],2,"Un piège classique !"],
+ ["Géographie","Quel fleuve se jette dans l'Atlantique après avoir traversé Nantes ?",["La Seine","La Garonne","La Loire","Le Rhône"],2,"Le plus long fleuve de France."],
+ ["Géographie","Combien de régions compte la France métropolitaine ?",["12","13","18","22"],1,"13 en métropole, 18 avec l'outre-mer."],
+ ["Géographie","Quel est le chef-lieu de la Martinique ?",["Pointe-à-Pitre","Fort-de-France","Cayenne","Basse-Terre"],1,"Pointe-à-Pitre et Basse-Terre sont en Guadeloupe."],
+ // Français
+ ["Français","Quel mot est correctement orthographié ?",["Néamoins","Néanmoin","Néanmoins","Néenmoins"],2,"N-é-a-n-m-o-i-n-s."],
+ ["Français","Complète : « Les robes qu'elle a … sont superbes. »",["acheté","achetés","achetée","achetées"],3,"Le COD « robes » est placé avant : on accorde."],
+ ["Français","Quel est le pluriel de « un œil » ?",["Des œils","Des yeux","Des œuils","Des yeuxs"],1,"Sauf dans « des œils-de-bœuf » !"],
+ ["Français","Que veut dire « poser un lapin » ?",["Offrir un cadeau","Ne pas venir à un rendez-vous","Partir en avance","Faire une blague"],1,"Faire attendre quelqu'un pour rien."],
+ ["Français","Quel est le féminin de « ambassadeur » ?",["Ambassadeuse","Ambassadeure","Ambassadrice","Ambassadresse"],2,"Comme acteur / actrice."],
+ ["Français","Quel mot est un synonyme d'« éphémère » ?",["Passager","Éternel","Lumineux","Solide"],0,"Qui ne dure pas."],
+ // Logique
+ ["Logique","Quel nombre continue la suite : 2, 6, 12, 20, 30, … ?",["36","40","42","48"],2,"On ajoute 4, 6, 8, 10, puis 12."],
+ ["Logique","Un nénuphar double de taille chaque jour et couvre tout le lac en 30 jours. En combien de jours couvre-t-il la moitié du lac ?",["15","20","29","10"],2,"La veille du 30e jour !"],
+ ["Logique","Si 3 chats attrapent 3 souris en 3 minutes, combien faut-il de chats pour attraper 100 souris en 100 minutes ?",["3","33","100","300"],0,"Chaque chat attrape une souris toutes les 3 minutes."],
+ ["Logique","Combien de fois écrit-on le chiffre 9 en comptant de 1 à 100 ?",["10","11","19","20"],3,"Dix fois en unité, dix fois en dizaine (90 à 99)."],
+ ["Logique","Marie a 4 filles et chacune d'elles a un frère. Combien Marie a-t-elle d'enfants ?",["5","8","6","4"],0,"Elles ont toutes le même frère."],
+ // Miss France
+ ["Miss France","Qui présente l'élection de Miss France sur TF1 depuis plus de 30 ans ?",["Nikos Aliagas","Jean-Pierre Foucault","Arthur","Michel Drucker"],1,"Il présente l'élection depuis 1995."],
+ ["Miss France","Sur quelle île les candidates de 2027 ont-elles fait leur voyage de préparation ?",["La Martinique","Saint-Martin","La Réunion","Tahiti"],1,"Une première pour l'élection."]
+];
+
+/* ===================== TEST « QUELLE MISS ES-TU ? » ===================== */
+const TAGLABEL={sport:"le sport",mer:"la mer",montagne:"la montagne",voyage:"les voyages",mode:"la mode",creatif:"la créativité",danse:"la danse",musique:"la musique",cheval:"l'équitation",animaux:"les animaux",soin:"prendre soin des autres",mental:"la santé mentale",enfants:"les enfants",solidarite:"la solidarité",femmes:"les droits des femmes",justice:"la justice",business:"l'esprit d'entreprise",ambition:"l'ambition",fete:"la bonne humeur",famille:"la famille",racines:"tes racines",douceur:"la bienveillance",resilience:"la résilience",culture:"la culture"};
+const PERSO_Q=[
+ ["Ton samedi idéal, c'est…",[["Un match ou un bon entraînement",["sport"]],["Plage, masque et tuba",["mer"]],["Shopping et séance d'essayage",["mode"]],["Un cours de danse, puis une soirée",["danse","fete"]],["Une balade à cheval",["cheval"]]]],
+ ["Si tu devais choisir un métier, ce serait…",[["Soigner les autres",["soin"]],["Monter ma propre boîte",["business","ambition"]],["Protéger, rendre la justice",["justice"]],["Enseigner aux enfants",["enfants"]],["Créer : mode, photo, com",["creatif"]]]],
+ ["La cause qui te fait vibrer…",[["Les droits des femmes",["femmes"]],["La protection des animaux",["animaux"]],["La santé mentale",["mental"]],["L'inclusion des personnes handicapées",["solidarite"]],["La protection de l'enfance",["enfants"]]]],
+ ["Ta prochaine valise part…",[["Au bout du monde, sac à dos",["voyage"]],["Sur une île, eau turquoise",["mer"]],["À la montagne",["montagne"]],["Chez moi, retrouver mes racines",["racines"]]]],
+ ["Tes amies disent de toi que tu es…",[["La sportive de la bande",["sport"]],["La solaire qui met l'ambiance",["fete"]],["La confidente toujours à l'écoute",["douceur","soin"]],["L'ambitieuse qui a toujours un plan",["ambition"]],["L'artiste du groupe",["creatif"]]]],
+ ["Ton animal totem…",[["Le cheval",["cheval"]],["Le chien",["animaux"]],["Le dauphin",["mer"]],["Le lion",["ambition"]],["Le papillon",["danse","creatif"]]]],
+ ["En musique, tu es plutôt…",[["Je joue d'un instrument",["musique"]],["Je danse dès la première note",["danse"]],["Playlist à fond pour le sport",["sport"]],["Les musiques de chez moi",["racines"]]]],
+ ["Ta plus grande fierté…",[["Ma région, mes racines",["racines"]],["Ma famille",["famille"]],["Mes études, mes diplômes",["culture"]],["M'être relevée après une épreuve",["resilience"]]]],
+ ["Ta tenue pour la grande soirée…",[["Robe longue glamour",["mode"]],["Tailleur chic",["business"]],["Robe fluide et bohème",["douceur"]],["Une tenue où je peux bouger",["sport","danse"]]]],
+ ["Face à un obstacle…",[["Je fonce",["ambition"]],["J'en fais une force",["resilience"]],["Je m'entoure des miens",["famille"]],["Je souris et j'avance",["fete"]]]]
+];
+const PERSO={
+ c0:[["fete","business","ambition"],"Étudiante en événementiel en alternance, Chiara est organisée, ambitieuse et vise le top 5. Comme toi, elle sait où elle va… et comment y aller en beauté."],
+ c1:[["mode","creatif","ambition"],"Étudiante en école de mode, Solène rêve de devenir styliste. Elle a décroché son écharpe à sa troisième tentative : créative et persévérante, comme toi."],
+ c2:[["business","femmes","ambition"],"En master d'école de commerce, Lina veut représenter les femmes qui étudient, travaillent et entreprennent. Toi aussi, tu as l'âme d'une cheffe."],
+ c3:[["justice","enfants","sport"],"Étudiante en droit à Brest et sportive, Margot rêve de devenir juge des enfants. Un sens de la justice et un cœur immense : tout toi."],
+ c4:[["soin","danse","mental"],"Infirmière en psychiatrie et danseuse depuis toute petite, Ilona veut briser les tabous autour de la santé mentale. Douce, engagée, et toujours en mouvement."],
+ c5:[["voyage","business","fete"],"Responsable marketing, Justine adore voyager et porte un tatouage « Viva la vida » fait aux Philippines. Comme toi, elle croque la vie à pleines dents."],
+ c6:[["enfants","mode","creatif"],"Diplômée d'un master dans les métiers de l'enseignement, Céline est aussi mannequin et modèle photo. Pédagogue et créative : le combo parfait."],
+ c7:[["voyage","musique","sport"],"Hôtesse de l'air chez Air Corsica, Satine joue au volley et au piano. Toujours entre deux avions, comme toi elle a la bougeotte."],
+ c8:[["mer","sport","animaux"],"Étudiante à l'EDHEC, volleyeuse, May a passé son permis bateau à 16 ans. Elle défend la cause animale et la recherche contre le cancer. Sportive, iodée, engagée."],
+ c9:[["soin","sport","mer"],"Infirmière qui vise médecine, Emma court, pédale et surveille les plages comme sauveteuse en mer bénévole. Toi aussi, tu as un vrai cœur de héroïne."],
+ c10:[["soin","enfants","resilience"],"Infirmière coordinatrice en petite enfance, Sandra est dyslexique et sensibilise aux troubles DYS. Elle a fait de sa différence une force, comme toi."],
+ c11:[["mode","mer","femmes","creatif"],"Conseillère en parfumerie, passionnée de mode, de dessin et de plongée, Julia s'engage contre les violences faites aux femmes. Créative, et forte."],
+ c12:[["sport","culture"],"Ancienne joueuse de tennis de haut niveau, Camilla a fait des études de journalisme. Compétitrice et curieuse : tu as tout d'une championne."],
+ c13:[["mer","voyage","racines"],"Consultante, Candice adore nager, faire du snorkeling et voyager. Elle parle occitan et a déjà nagé avec des requins. Aventurière, comme toi."],
+ c14:[["famille","business","resilience"],"Étudiante en gestion, Élise s'est lancée sur les conseils de son grand-père et a gagné après plusieurs tentatives. La famille, la persévérance : tout toi."],
+ c15:[["mode","cheval","voyage"],"En BTS commerce dans une boutique de luxe de seconde main, Léane adore voyager et monter à cheval. Déterminée et stylée, comme toi."],
+ c16:[["racines","soin","douceur"],"Diplômée en management de la santé, Maureen-Alycia veut porter haut la culture martiniquaise et prône l'amour et la bienveillance. Ton âme sœur douceur."],
+ c17:[["enfants","femmes","sport","racines"],"Diplômée de lettres, Emma rêve d'être professeure des écoles, joue au basket et s'engage contre les violences faites aux femmes. Fière de son lagon, et de ses valeurs."],
+ c18:[["sport","justice","femmes"],"Ancienne joueuse du Stade Toulousain, championne de France Espoirs, Carla a réussi le concours de sous-officier de gendarmerie. Elle casse les clichés : comme toi."],
+ c19:[["fete","racines"],"La benjamine de la promo, lycéenne pétillante, Lana veut faire découvrir la diversité de la Nouvelle-Calédonie. Énergie solaire garantie."],
+ c20:[["cheval","voyage","solidarite"],"Étudiante en langues, aux racines portugaises, Shana fait des concours d'équitation avec sa jument Chelsea et aide les personnes isolées. Généreuse, comme toi."],
+ c21:[["cheval","creatif","solidarite"],"Comptable, cavalière, photographe et mannequin, Pauline s'engage pour l'inclusion des personnes handicapées, en hommage à sa cousine. Un cœur en or."],
+ c22:[["enfants","solidarite","douceur"],"Éducatrice, Maëlle accompagne des élèves en situation de handicap au lycée. Patiente et bienveillante : la confidente que tout le monde rêve d'avoir."],
+ c23:[["cheval","creatif","business"],"La rousse de la promo ! Marie étudie la communication en alternance et monte à cheval depuis ses 3 ans. Créative et passionnée, comme toi."],
+ c24:[["famille","mode","business"],"Gérante d'une boutique de robes de mariée et maman de deux enfants, Mandy est la première maman et la doyenne de l'histoire de l'élection. Audacieuse, comme toi."],
+ c25:[["soin","femmes","fete"],"Kiné spécialisée en santé des femmes, issue d'une famille de pompiers, Ophélie se décrit comme solaire et passionnée. Toi aussi, tu illumines la pièce."],
+ c26:[["soin","mental","racines"],"Future pharmacienne, Laetitia est sensible à la santé mentale et fière du métissage réunionnais. Attentionnée et fière de ses racines, comme toi."],
+ c27:[["business","ambition"],"Lyonnaise, cheffe de projet marketing, Julia a enchaîné trois écharpes en 2026. Une vraie gagnante : toi aussi, tu ne fais rien à moitié."],
+ c28:[["montagne","danse","resilience","solidarite","culture"],"Kiné, danseuse, plongeuse, randonneuse et skieuse, Juliette a passé plusieurs mois en fauteuil et soutient les enfants handicapés. Une force tranquille."],
+ c29:[["animaux","mode","business"],"Manager pour une marque automobile et mannequin, Naïla rêve d'ouvrir un refuge pour chiens errants sur son île. Business woman au grand cœur."],
+ c30:[["danse","racines","femmes"],"Professeure de Ori Tahiti, la danse traditionnelle, Leia s'engage pour la recherche sur l'endométriose et fait rayonner la culture polynésienne."]
+};
+function persoResult(ans){
+  const tags={}; ans.forEach((a,i)=>{ if(a==null) return; PERSO_Q[i][1][a][1].forEach(t=>tags[t]=(tags[t]||0)+1); });
+  const seed=ans.join("").split("").reduce((h,c)=>(h*31+c.charCodeAt(0))%9973,7);
+  const sc=CANDS.map((c,k)=>{const tg=PERSO[c.id][0];const s=tg.reduce((a,t)=>a+(tags[t]||0),0)/Math.sqrt(tg.length);return {id:c.id,s:s+((k*37+seed)%31)/1000,common:tg.filter(t=>tags[t])};});
+  sc.sort((a,b)=>b.s-a.s); return sc[0];
+}
+
+/* ===================== ACCÈS À LA BASE ===================== */
+function makeApi(){
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const ok = ({data,error})=>{ if(error) throw error; return data; };
+  let uid=null;
+  return {
+    async session(){ const {data}=await sb.auth.getSession(); uid=data.session?.user?.id||null; return uid; },
+    async signIn(){ const d=ok(await sb.auth.signInAnonymously()); uid=d.user.id; return uid; },
+    async myProfile(){ const d=ok(await sb.rpc("my_profile")); return d&&d.id?d:null; },
+    async createProfile(name,emoji){ ok(await sb.from("profiles").insert({name,emoji})); return this.myProfile(); },
+    async saveProfile(id,patch){ ok(await sb.from("profiles").update(patch).eq("id",id)); },
+    async recoveryCode(){ return ok(await sb.rpc("my_recovery_code")); },
+    async recover(code){ return ok(await sb.rpc("recover_profile",{p_code:code})); },
+    async createLeague(name){ return ok(await sb.rpc("create_league",{p_name:name})); },
+    async joinLeague(code){ return ok(await sb.rpc("join_league",{p_code:code})); },
+    async leaveLeague(leagueId,profileId){ return ok(await sb.from("league_members").delete().eq("league_id",leagueId).eq("profile_id",profileId)); },
+    async myLeagues(){ return ok(await sb.rpc("my_leagues"))||[]; },
+    async leagueProfiles(id){ return ok(await sb.rpc("league_profiles",{p_league:id}))||[]; },
+    async stats(){ return ok(await sb.rpc("france_stats")); },
+    async franceRound(n){ return ok(await sb.rpc("france_round",{n})); },
+    async results(){ return ok(await sb.from("results").select("*").eq("id",1).single()); },
+    onResults(cb){ sb.channel("results").on("postgres_changes",{event:"*",schema:"public",table:"results"},p=>cb(p.new)).subscribe(); },
+    async adminCheck(pwd){ return ok(await sb.rpc("admin_check",{p_pwd:pwd})); },
+    async adminSetResults(pwd,r){ return ok(await sb.rpc("admin_set_results",{p_pwd:pwd,p_top15:r.top15,p_top5:r.top5,p_ord:r.ord})); },
+    async adminSetState(pwd,s){ return ok(await sb.rpc("admin_set_state",{p_pwd:pwd,p_manche:s.manche,p_locked:s.locked,p_show_at:s.show_at,p_close_at:s.close_at})); },
+    async adminFranceRound(pwd,n){ return ok(await sb.rpc("admin_france_round",{p_pwd:pwd,n})); },
+    async adminReset(pwd){ return ok(await sb.rpc("admin_reset_night",{p_pwd:pwd})); }
+  };
+}
+const API = window.MOCK_API || makeApi();
+
+/* ===================== ÉTAT ===================== */
+let P=null, R={manche:1,votes_locked:false,show_at:"2026-12-12T21:10:00+01:00",close_at:null,top15:[],top5:[],ord:[null,null,null,null,null]};
+let FR={}, STATS=null, LEAGUES=[];
+const LP={};
+const UI={tab:"jouer",open:null,filter:"all",q:"",league:null,welcome:"new",emoji:"👑",admin:false,adminPwd:"",syncing:false,adminFR:{},adminPick:null};
+let pendingJoin=null;
+const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+const errMsg=e=>{const m=(e&&e.message)||String(e);for(const k in ERRORS) if(m.includes(k)) return ERRORS[k];return "Oups, problème de connexion. Réessaie !";};
+function toast(t,err){const o=document.createElement("div");o.className="toast"+(err?" err":"");o.textContent=t;document.body.appendChild(o);setTimeout(()=>o.remove(),2600);}
+
+/* ===================== CALCULS ===================== */
+const critsOf=p=>p.mode==="global"?[{id:"global",label:"Note globale"}]:CRITS.filter(c=>(p.crits||[]).includes(c.id));
+function avg(p,cid){const n=(p.notes||{})[cid];if(!n)return null;const v=critsOf(p).map(c=>n[c.id]).filter(x=>typeof x==="number");return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;}
+const done=(p,cid)=>{const n=(p.notes||{})[cid]||{};const c=critsOf(p);return c.length>0&&c.every(k=>typeof n[k.id]==="number");};
+const notesOrder=p=>CANDS.map(c=>({c,s:avg(p,c.id)})).sort((a,b)=>(b.s??-1)-(a.s??-1)||a.c.n-b.c.n).map(x=>x.c.id);
+const pool=n=>n===1?CANDS.map(c=>c.id):n===2?R.top15:R.top5;
+const resultReady=n=>n===1?R.top15.length===15:n===2?R.top5.length===5:R.ord.every(Boolean);
+function filterTo(order,ids){const s=new Set(ids);const out=order.filter(x=>s.has(x));ids.forEach(x=>{if(!out.includes(x))out.push(x);});return out;}
+function roundOf(p,n){
+  const r=(p.rounds||{})[n];
+  if(Array.isArray(r)&&r.length) return filterTo(r,pool(n));
+  if(n===1) return notesOrder(p);
+  return filterTo(roundOf(p,n-1),pool(n));
+}
+const saved=(p,n)=>Array.isArray((p.rounds||{})[n]);
+const inter=(a,b)=>a.filter(x=>b.includes(x)).length;
+function pts(order,ref,n){
+  if(n===1) return inter(order.slice(0,15),ref.slice(0,15));
+  if(n===2) return 3*inter(order.slice(0,5),ref.slice(0,5));
+  return (order[0]&&order[0]===ref[0]?10:0)+3*[1,2,3,4].filter(i=>order[i]&&order[i]===ref[i]).length;
+}
+const tvRef=n=>n===1?R.top15:n===2?R.top5:R.ord;
+const frRef=n=>FR[n]&&!FR[n].hidden?filterTo(FR[n].order||[],pool(n)):null;
+function scores(p){
+  const out={tv:0,fr:0,by:{}};
+  [1,2,3].forEach(n=>{
+    const avail=n<R.manche||(n===R.manche&&R.votes_locked);
+    if(n>R.manche) return;
+    const ord=roundOf(p,n), b={tv:null,fr:null};
+    if(resultReady(n)){b.tv=pts(ord,tvRef(n),n);out.tv+=b.tv;}
+    const f=frRef(n); if(avail&&f&&f.length){b.fr=pts(ord,f,n);out.fr+=b.fr;}
+    out.by[n]=b;
+  });
+  return out;
+}
+const isOpen=()=>R.manche<=3&&!R.votes_locked;
+
+/* ===================== SAUVEGARDE ===================== */
+let pend={},timer=null;
+function patch(obj){Object.assign(P,obj);Object.assign(pend,obj);UI.syncing=true;paintSync();clearTimeout(timer);timer=setTimeout(flush,700);}
+async function flush(){
+  const body=pend;pend={};if(!Object.keys(body).length){UI.syncing=false;paintSync();return;}
+  try{await API.saveProfile(P.id,body);}
+  catch(e){toast(errMsg(e),true);try{P=await API.myProfile();await refreshShared();}catch(_){} render();}
+  UI.syncing=Object.keys(pend).length>0;paintSync();
+}
+function paintSync(){const s=document.getElementById("sync");if(s) s.textContent=UI.syncing?"…":"✓";}
+window.addEventListener("pagehide",()=>{if(Object.keys(pend).length) flush();});
+function saveRound(n,order){const r={...(P.rounds||{})};r[n]=order;patch({rounds:r});}
+
+/* ===================== CHARGEMENT ===================== */
+async function refreshShared(){
+  try{R=await API.results();}catch(e){}
+  try{STATS=await API.stats();}catch(e){}
+  for(const n of [1,2,3]){ if(n<=R.manche){ try{FR[n]=await API.franceRound(n);}catch(e){} } else delete FR[n]; }
+}
+async function refreshLeagues(){
+  try{LEAGUES=await API.myLeagues();}catch(e){LEAGUES=[];}
+  if(UI.league&&!LEAGUES.find(l=>l.id===UI.league)) UI.league=null;
+  if(!UI.league&&LEAGUES.length){const s=ls.get("cp-league");UI.league=s&&LEAGUES.find(l=>l.id===s)?s:LEAGUES[0].id;}
+  if(UI.league) await loadLeague(UI.league);
+}
+async function loadLeague(id){try{LP[id]=await API.leagueProfiles(id);}catch(e){}}
+function hideSplash(){const sp=document.getElementById("splash");if(!sp)return;const wait=Math.max(0,1400-(Date.now()-T0));setTimeout(()=>{sp.classList.add("out");setTimeout(()=>sp.remove(),700);},wait);}
+const T0=Date.now();
+async function boot(){
+  readHash();
+  if(UI.admin&&ls.get("lelue-admin")){try{if(await API.adminCheck(ls.get("lelue-admin"))) UI.adminPwd=ls.get("lelue-admin");}catch(e){}}
+  try{const uid=await API.session(); if(uid) P=await API.myProfile();}catch(e){}
+  await refreshShared();
+  if(P){await refreshLeagues(); if(pendingJoin) await doJoin(pendingJoin);}
+  render(); hideSplash();
+  try{API.onResults(async r=>{const changed=r.manche!==R.manche||r.votes_locked!==R.votes_locked;R={...R,...r};if(changed){await refreshShared();if(P)P=await API.myProfile()||P;}render(true);});}catch(e){}
+  setInterval(tick,1000);
+  setInterval(async()=>{ if(document.hidden) return; await refreshShared(); if(P&&UI.league&&UI.tab==="groupes") await loadLeague(UI.league); render(true);},45000);
+}
+function readHash(){
+  const h=decodeURIComponent(location.hash.slice(1));
+  UI.admin=h==="admin"||!!window.FORCE_ADMIN;
+  const m=h.match(/^rejoindre-([A-Za-z]+-\d{4})$/); if(m){pendingJoin=m[1].toUpperCase();UI.tab="groupes";}
+}
+window.addEventListener("hashchange",()=>{readHash();if(pendingJoin&&P) doJoin(pendingJoin).then(()=>render());else render();});
+
+/* ===================== COMPTE À REBOURS ===================== */
+function countdownTarget(){
+  const now=Date.now();
+  if(R.manche<=3&&!R.votes_locked&&R.close_at&&new Date(R.close_at)>now) return {label:`Fin de la manche ${R.manche} dans`,t:new Date(R.close_at)};
+  if(R.manche===1&&!R.votes_locked&&new Date(R.show_at)>now) return {label:"L'élection commence dans",t:new Date(R.show_at)};
+  return null;
+}
+function cdParts(ms){ms=Math.max(0,ms);const s=Math.floor(ms/1000);return [Math.floor(s/86400),Math.floor(s%86400/3600),Math.floor(s%3600/60),s%60];}
+function vCountdown(){
+  const c=countdownTarget();
+  if(!c){
+    let msg;
+    if(R.manche>3) msg="La soirée est terminée. Merci d'avoir joué !";
+    else if(R.votes_locked) msg=`Manche ${R.manche} fermée, place au verdict`;
+    else msg=`Manche ${R.manche} ouverte, elle ferme bientôt`;
+    return `<div class="cd"><div class="lab">${msg}</div></div>`;
+  }
+  const [d,h,m,s]=cdParts(c.t-Date.now()), two=x=>String(x).padStart(2,"0");
+  return `<div class="cd"><div class="lab">${c.label}</div><div class="digits">
+    ${d>0?`<div><b id="cd0">${d}</b><small>jours</small></div>`:""}<div><b id="cd1">${two(h)}</b><small>heures</small></div>
+    <div><b id="cd2">${two(m)}</b><small>minutes</small></div><div><b id="cd3">${two(s)}</b><small>secondes</small></div></div></div>`;
+}
+let BULBS_DONE=false;
+function vHero(hello,tag){
+  return `<div class="hero"><div class="glass">${hello?`<p class="hello">${hello}</p>`:""}<h1 class="shine">L'Élue</h1>
+    <p class="tag">${tag||"Les dernières retouches avant le grand soir"}</p>${vCountdown()}</div><div class="bulbs"></div></div>`;
+}
+function placeBulbs(){
+  document.querySelectorAll(".hero").forEach(f=>{const box=f.querySelector(".bulbs"); if(!box||box.childElementCount) return;
+    const W=f.clientWidth,H=f.clientHeight,inset=12,R=W/2-inset,cx=W/2,cy=W/2,bottom=H-22;
+    const arc=Math.PI*R,side=Math.max(0,bottom-cy),total=arc+2*side,N=Math.max(6,Math.round(total/52)),step=total/N;
+    for(let i=0;i<=N;i++){let d=i*step,x,y;
+      if(d<side){x=inset;y=bottom-d;} else if(d<side+arc){const a=Math.PI-(d-side)/R;x=cx+Math.cos(a)*R;y=cy-Math.sin(a)*R;} else {x=W-inset;y=cy+(d-side-arc);}
+      const e=document.createElement("span");e.className="bulb";e.style.left=x+"px";e.style.top=y+"px";box.appendChild(e);
+      if(BULBS_DONE) e.classList.add("lit"); else setTimeout(()=>e.classList.add("lit"),250+i*55);}
+    setTimeout(()=>{BULBS_DONE=true;},300+N*55);
+  });
+}
+setInterval(()=>{const b=[...document.querySelectorAll(".bulb.lit")];if(!b.length||matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  const e=b[Math.floor(Math.random()*b.length)];const seq=Math.random()<.5?[0,90,160,260]:[0,140];
+  seq.forEach((t,k)=>setTimeout(()=>e.classList.toggle("dim",k%2===0),t));setTimeout(()=>e.classList.remove("dim"),320);},1700);
+function tick(){
+  const c=countdownTarget(); const el=document.getElementById("cd3");
+  if(!c||!el){ if(!c&&document.querySelector(".cd .digits")) render(true); return; }
+  const [d,h,m,s]=cdParts(c.t-Date.now()), two=x=>String(x).padStart(2,"0");
+  const set=(id,v)=>{const e=document.getElementById(id);if(e&&e.textContent!==String(v))e.textContent=v;};
+  set("cd0",d);set("cd1",two(h));set("cd2",two(m));set("cd3",two(s));
+}
+
+/* ===================== VUES ===================== */
+const TABS=[["jouer","Jouer"],["noter","Noter"],["quiz","Tests"],["groupes","Groupes"],["resultats","Résultats"]];
+function render(soft){
+  if(DRAG) return;
+  const app=document.getElementById("app"), nav=document.getElementById("navbar");
+  if(UI.admin){nav.style.display="none";app.innerHTML=vAdmin();return;}
+  if(!P){nav.style.display="none";app.innerHTML=vWelcome();placeBulbs();return;}
+  if(soft&&document.activeElement&&document.activeElement.tagName==="INPUT") return;
+  nav.style.display="";
+  document.getElementById("nav").innerHTML=TABS.map(t=>`<button data-a="tab" data-v="${t[0]}" class="${UI.tab===t[0]?"on":""}">${ICONS[t[0]]}${t[1]}</button>`).join("");
+  const head=`<header><div class="brand"><img src="/icons/diademe.webp" alt=""><div class="logo shine">L'Élue</div></div>
+    <button class="me" data-a="tab" data-v="profil"><span class="av">${esc(P.emoji)}</span>${esc(P.name)}<span class="sync" id="sync">${UI.syncing?"…":"✓"}</span></button></header>`;
+  const views={jouer:vJouer,noter:vNoter,quiz:vQuiz,groupes:vGroupes,resultats:vResultats,profil:vProfil};
+  app.innerHTML=head+(views[UI.tab]||vJouer)();
+  placeBulbs();
+  if(UI.tab==="jouer"&&isOpen()&&R.manche>1&&!saved(P,R.manche)) saveRound(R.manche,roundOf(P,R.manche));
+}
+
+function vWelcome(){
+  if(UI.welcome==="recover") return `<div class="welcome"><div class="logo shine" style="font-size:44px">L'Élue</div>
+    <div class="box"><h3>Retrouver mon profil</h3><div class="sub">Tape le code perso que l'appli t'a donné (il est dans ton profil sur ton ancien téléphone).</div>
+    <form id="frecover"><input class="field code" id="rcode" placeholder="ABCD-EFGH" maxlength="9" autocomplete="off"><button class="btn gold wide" style="margin-top:10px">Retrouver mon profil</button></form>
+    <p style="margin-top:12px;text-align:center"><button class="link" data-a="welcome" data-v="new">← Je suis nouvelle</button></p></div></div>`;
+  return `<div class="welcome">${vHero("Bienvenue","Qui sera couronnée le 12 décembre ?")}
+    <div class="sub" style="margin-top:14px">Classe les candidates, gagne des points si la télé te donne raison et si la France pense comme toi. Et note-les entre copines.</div>
+    ${pendingJoin?`<div class="note">Tu as été invitée dans le groupe <b>${esc(pendingJoin)}</b>. Crée ton profil et tu y seras directement.</div>`:""}
+    <div class="box"><h3>Ton prénom ou pseudo</h3>
+      <form id="fwelcome"><input class="field" id="wname" maxlength="20" placeholder="Ex : Léa" autocomplete="off">
+      <div class="det" style="margin-top:12px">Ton emoji</div>
+      <div class="emojis">${EMOJIS.map(e=>`<button type="button" data-a="wemoji" data-v="${e}" class="${UI.emoji===e?"on":""}">${e}</button>`).join("")}</div>
+      <button class="cta" style="margin-top:14px"><b>C'est parti</b></button></form>
+      <div class="det" style="margin-top:10px">Pas de compte, pas d'e-mail. Ton profil est enregistré sur ce téléphone.</div>
+    </div>
+    <p><button class="link" data-a="welcome" data-v="recover">J'ai déjà un profil (code perso)</button></p></div>`;
+}
+
+function vSteps(){
+  return `<div class="steps">${[1,2,3].map(n=>{const st=n<R.manche||(n===R.manche&&R.votes_locked)?"done":n===R.manche?"cur":"";
+    const lab=n<R.manche?"terminée":n===R.manche?(R.votes_locked?"fermée":"en cours"):"à venir";
+    return `<div class="${st}"><b>${MANCHES[n].short}</b>${lab}</div>`}).join("")}</div>`;
+}
+function vRules(){
+  return `<details class="box"><summary>Comment gagner des points</summary>
+  <p class="det" style="margin:10px 0">Un seul classement, deux façons de marquer. Le classement de la France reste secret jusqu'à la fin de chaque manche.</p>
+  <table class="rules"><tr><th>Manche</th><th>Si la télé te donne raison</th><th>Si la France pense comme toi</th></tr>
+  <tr><td><b>Top 15</b><br><span class="det">avant l'annonce du top 15</span></td><td><b>1 pt</b> par candidate de ton top 15 qualifiée</td><td><b>1 pt</b> par candidate en commun avec le top 15 de la France</td></tr>
+  <tr><td><b>Top 5</b><br><span class="det">avant l'annonce du top 5</span></td><td><b>3 pts</b> par finaliste trouvée</td><td><b>3 pts</b> par candidate en commun avec le top 5 de la France</td></tr>
+  <tr><td><b>Couronne</b><br><span class="det">avant le verdict</span></td><td><b>10 pts</b> pour Miss France, <b>+3</b> par dauphine au bon rang</td><td><b>10 pts</b> si ta n°1 est celle de la France, <b>+3</b> par rang identique</td></tr></table>
+  <p class="det" style="margin-top:10px">Deux classements : <b style="color:var(--ivoire)">Reine du prono</b> (points télé) et <b style="color:var(--ivoire)">En phase avec la France</b>.</p></details>`;
+}
+function vMyPoints(){
+  const s=scores(P);
+  return `<div class="stat"><div><b>${s.tv}</b>Reine du prono</div><div><b>${s.fr}</b>En phase avec la France</div></div>`;
+}
+function rankItem(id,i,k,extra){
+  const c=BY[id];
+  return `<li data-id="${id}" class="${i<k?"in":""}"><button class="pos" data-a="moveto" data-v="${id}" title="Déplacer">${i+1}</button>
+    <div class="grow"><b>Miss ${c.region}</b>${P.soulmate===id?' <img class="tiny" src="/icons/diademe.webp" alt="Ta Miss de cœur">':""}<div class="det">${c.name}</div></div>${extra||""}<span class="handle" aria-label="Glisser">${GRIP}</span></li>`;
+}
+function vJouer(){
+  const n=Math.min(R.manche,3), M=MANCHES[n];
+  const hi=P?`Bonsoir ${esc(P.name)}`:"";
+  let html=vHero(hi)+(isOpen()?`<button class="cta" data-a="goto-rank"><b>${n===1?"Faire mon top 15":n===2?"Faire mon top 5":"Choisir ma Miss France"}</b><small>${n===1?"Ouvert jusqu'à l'annonce des qualifiées":n===2?"Ouvert jusqu'à l'annonce du top 5":"Ouvert jusqu'au verdict"}</small></button>`:"")+vSteps();
+  if(R.manche>3){ html+=`<div class="box"><h3>Tes points</h3>${vMyPoints()}</div><button class="btn wide" data-a="tab" data-v="resultats">Voir tous les résultats</button>`; return html+vRules(); }
+  const order=roundOf(P,n);
+  if(isOpen()){
+    const cutLabel=n===1?"Fin de ton top 15":n===2?"Fin de ton top 5":"";
+    html+=`<h2 class="goldtx" id="rank-title">Manche ${n} · ${M.name}</h2><div class="sub">${n===1?"Classe les 31 candidates : tes <b>15 premières</b> sont ton top 15. Il est pré-rempli d'après tes notes.":n===2?"Les 15 qualifiées sont connues ! Classe-les : tes <b>5 premières</b> sont ton top 5.":"Le top 5 est connu ! Range-les de Miss France à la 4e dauphine."}
+      Appuie longtemps sur une candidate (ou sur ⠿) et fais-la glisser, ou touche son numéro pour la déplacer.</div>
+    ${n===1&&!saved(P,1)?`<div class="note">Pour l'instant, ton classement suit tes notes. Il compte pour la France dès que tu déplaces une candidate ou que tu l'envoies. <button class="btn sm gold" data-a="sendr1" style="margin-top:8px">Envoyer ce classement</button></div>`:""}
+    <ul class="rank" id="rank" data-n="${n}">${order.map((id,i)=>(i===M.k&&cutLabel?`<li class="cut">${cutLabel}</li>`:"")+rankItem(id,i,n===3?5:M.k,n===3?`<span class="pill gold">${ORDER_LABELS[i]}</span>`:"")).join("")}</ul>
+    <div class="row" style="justify-content:space-between;flex-wrap:wrap">
+      ${n===1?`<button class="btn sm" data-a="resort">Re-trier d'après mes notes</button>`:`<span></span>`}
+      <button class="btn sm" data-a="story">Partager en story</button></div>
+    <div class="det" style="margin-top:8px">Enregistré automatiquement. Tu peux changer jusqu'à la fermeture de la manche.</div>`;
+  }else{
+    const f=frRef(n), mine=order.slice(0,M.k);
+    html+=`<h2>Manche ${n} fermée</h2><div class="sub">Plus de changement possible. ${resultReady(n)?"":"Le résultat officiel arrive…"}</div>`;
+    if(f&&f.length) html+=`<div class="box"><h3>Le ${n===3?"classement":"top "+M.k} de la France est révélé</h3>
+      ${f.slice(0,M.k).map((id,i)=>`<div class="rk p${i+1}"><div class="pos">${i+1}</div><div class="grow"><b>Miss ${BY[id].region}</b><div class="det">${BY[id].name}</div></div>${(n===3?order[i]===id:mine.includes(id))?`<span class="mk">comme toi</span>`:""}</div>`).join("")}
+      <div class="det" style="margin-top:8px">D'après ${FR[n].voters} classement${FR[n].voters>1?"s":""}.</div></div>`;
+    html+=`<div class="box"><h3>Ton ${n===3?"classement":"top "+M.k}</h3>${mine.map((id,i)=>`<div class="rk"><div class="pos">${i+1}</div><div class="grow"><b>Miss ${BY[id].region}</b></div>${tvRef(n).includes(id)&&resultReady(n)&&(n<3||R.ord[i]===id)?`<span class="mk">validée par la télé</span>`:""}</div>`).join("")}</div>`;
+  }
+  html+=`<div class="box"><h3>Mes points</h3>${vMyPoints()}</div>`;
+  return html+vRules();
+}
+
+function vNoter(){
+  const cr=critsOf(P), nDone=CANDS.filter(c=>done(P,c.id)).length;
+  if(!cr.length) return `<div class="empty">Aucun critère activé.<br><br><button class="btn gold" data-a="tab" data-v="profil">Choisir mes critères</button></div>`;
+  let list=CANDS.filter(c=>UI.filter==="all"||(UI.filter==="todo"?!done(P,c.id):done(P,c.id)));
+  if(UI.q){const q=UI.q.toLowerCase();list=list.filter(c=>(c.region+" "+c.name).toLowerCase().includes(q));}
+  return `<h2>Noter les candidates</h2><div class="sub">${nDone}/31 notées · tes notes comptent dans tes groupes et pré-remplissent ton classement · <button class="link" data-a="tab" data-v="profil">mes critères</button></div>
+  <div class="prog"><i style="width:${nDone/31*100}%"></i></div>
+  <input class="field" id="q" placeholder="Chercher une région ou un prénom…" value="${esc(UI.q)}" style="margin-top:10px">
+  <div class="seg" style="margin:8px 0 4px"><button data-a="filter" data-v="all" class="${UI.filter==="all"?"on":""}">Toutes</button><button data-a="filter" data-v="todo" class="${UI.filter==="todo"?"on":""}">À noter</button><button data-a="filter" data-v="done" class="${UI.filter==="done"?"on":""}">Notées</button></div>
+  ${list.map(c=>candCard(c,cr)).join("")||`<div class="empty">Rien ici</div>`}`;
+}
+function candCard(c,cr){
+  const s=avg(P,c.id),open=UI.open===c.id,n=(P.notes||{})[c.id]||{};
+  const q=encodeURIComponent(`Miss ${c.region} 2026 ${c.name} instagram`);
+  return `<div class="cand ${open?"open":""}"><div class="row"><button class="chead" data-a="open" data-v="${c.id}">
+     <div class="num">${c.n}</div><div class="grow"><div class="cname">Miss ${c.region}${P.soulmate===c.id?' <img class="tiny" src="/icons/diademe.webp" alt="Ta Miss de cœur">':""}</div><div class="creg">${c.name} · ${c.age} ans</div></div>
+     <div class="score">${s!==null?`<b>${s.toFixed(1)}</b><small>${done(P,c.id)?"/10":"en cours"}</small>`:`<small>à noter</small>`}</div></button>
+     <button class="heart ${P.coeur===c.id?"on":""}" data-a="coeur" data-v="${c.id}" aria-label="Coup de cœur"><svg viewBox="0 0 24 24"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 8 3.3 4.5 6.8 4.5c2.1 0 3.6 1.2 5.2 3.2 1.6-2 3.1-3.2 5.2-3.2 3.5 0 5.4 3.5 4.1 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/></svg></button></div>
+   ${open?`<div class="cbody">${cr.map(k=>`<div class="crit"><div class="lab"><span>${k.label}</span><span>${typeof n[k.id]==="number"?n[k.id]+"/10":""}</span></div>
+     <div class="notes">${[1,2,3,4,5,6,7,8,9,10].map(v=>`<button data-a="note" data-c="${c.id}" data-k="${k.id}" data-v="${v}" class="${n[k.id]===v?"on":(typeof n[k.id]==="number"&&v<n[k.id]?"in":"")}">${v}</button>`).join("")}</div></div>`).join("")}
+     <div class="links"><a href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener">Voir son Insta</a>${done(P,c.id)?`<button class="btn sm gold" data-a="next" data-v="${c.id}">Suivante →</button>`:""}</div></div>`:""}</div>`;
+}
+
+function groupNotesTop(ps){
+  return CANDS.map(c=>{const v=ps.map(p=>avg(p,c.id)).filter(x=>x!==null);return {id:c.id,s:v.length?v.reduce((a,b)=>a+b,0)/v.length:null,n:v.length};})
+    .filter(x=>x.s!==null).sort((a,b)=>b.s-a.s||BY[a.id].n-BY[b.id].n);
+}
+function vGroupes(){
+  const L=LEAGUES.find(l=>l.id===UI.league);
+  let html=`<h2>Mes groupes</h2>`;
+  if(!LEAGUES.length) html+=`<div class="sub">Entre copines, on note les candidates selon vos critères et on compare. Crée un groupe et partage le code, ou rejoins celui de tes copines.</div>`;
+  else html+=`<div class="box">${LEAGUES.map(l=>`<button class="grp" data-a="league" data-v="${l.id}"><div class="av">${esc(l.name.slice(0,1).toUpperCase())}</div><div class="grow"><b>${esc(l.name)}</b><div class="det">${l.members} joueuse${l.members>1?"s":""} · code ${esc(l.code)}</div></div>${l.id===UI.league?`<span class="pill ok">ouvert</span>`:"›"}</button>`).join("")}</div>`;
+  if(L){
+    const ps=(LP[L.id]||[]).map(p=>p.id===P.id?P:p);
+    const gt=groupNotesTop(ps).slice(0,10);
+    const sc=ps.map(p=>({p,...scores(p)}));
+    const board=(key)=>[...sc].sort((a,b)=>b[key]-a[key]||a.p.name.localeCompare(b.p.name)).map((x,i)=>`<div class="lb ${x.p.id===P.id?"mine":""}"><div class="av">${esc(x.p.emoji)}</div><div class="grow"><b>${esc(x.p.name)}</b></div><div class="tot">${x[key]}</div></div>`).join("");
+    html+=`<h3>${esc(L.name)}</h3>
+    <div class="box"><div class="det">Code du groupe</div><div class="bigcode">${esc(L.code)}</div>
+      <button class="btn gold wide" data-a="share" data-v="${L.id}">Inviter des copines</button></div>
+    <div class="box"><h3>Le classement du groupe</h3><div class="det" style="margin-bottom:6px">Moyenne de vos notes</div>
+      ${gt.length?gt.map((x,i)=>`<div class="rk p${i+1}"><div class="pos">${i+1}</div><div class="grow"><b>Miss ${BY[x.id].region}</b><div class="det">${BY[x.id].name} · ${x.n} avis</div></div><span class="val">${x.s.toFixed(1)}</span></div>`).join(""):`<div class="det">Personne n'a encore noté. Direction l'onglet Noter !</div>`}</div>
+    <div class="box"><h3>Les copines</h3>${ps.map(p=>`<div class="lb ${p.id===P.id?"mine":""}"><div class="av">${esc(p.emoji)}</div><div class="grow"><b>${esc(p.name)}</b><div class="det">${CANDS.filter(c=>done(p,c.id)).length}/31 notées${p.coeur?` · coup de cœur : Miss ${BY[p.coeur].region}`:""}${p.soulmate?` · sa Miss : ${BY[p.soulmate].region}`:""}${p.quiz_total?` · culture G ${String(qNote(p.quiz_score)).replace(".",",")}/20`:""}</div></div></div>`).join("")}</div>
+    <div class="box"><h3>Reine du prono</h3>${board("tv")}</div>
+    <div class="box"><h3>En phase avec la France</h3>${board("fr")}${!(R.manche>1||R.votes_locked)?`<div class="det" style="margin-top:6px">Les points tombent à la fin de chaque manche, le soir de l'élection.</div>`:""}</div>
+    <div style="text-align:center"><button class="btn sm ghost danger" data-a="leave" data-v="${L.id}">Quitter ce groupe</button></div>`;
+  }
+  html+=`<div class="box"><h3>Créer un groupe</h3>
+    <form id="fcreate" class="row"><input class="field grow" id="lname" maxlength="30" placeholder="Nom (ex : Les Miss du canap')"><button class="btn gold">Créer</button></form>
+    <div class="det" style="margin-top:6px">Le code est créé automatiquement, il est unique.</div></div>
+  <div class="box"><h3>Rejoindre un groupe</h3>
+    <form id="fjoin" class="row"><input class="field grow code" id="jcode" maxlength="12" placeholder="ROSE-1234" autocomplete="off"><button class="btn">Rejoindre</button></form></div>`;
+  return html;
+}
+
+function vResultats(){
+  let html=`<h2>Résultats</h2><div class="sub">${R.top15.length?"Les résultats tombent en direct.":"Rendez-vous le samedi 12 décembre sur TF1 : tout se mettra à jour ici en direct."}</div>
+  <div class="box"><h3>Mes points</h3>${vMyPoints()}</div>
+  <div class="box"><h3>Résultats officiels</h3>
+    ${R.ord.some(Boolean)?R.ord.map((id,i)=>`<div class="rk p${i+1}"><div class="pos">${i+1}</div><div class="grow"><b>${id?"Miss "+BY[id].region:"…"}</b><div class="det">${ORDER_LABELS[i]}</div></div></div>`).join(""):""}
+    ${R.top5.length&&!R.ord.some(Boolean)?`<div class="det" style="margin:4px 0">Top 5</div><div class="picks">${R.top5.map(id=>`<span class="pk on">${BY[id].region}</span>`).join("")}</div>`:""}
+    ${R.top15.length?`<div class="det" style="margin:10px 0 4px">Top 15</div><div class="picks">${R.top15.map(id=>`<span class="pk ${roundOf(P,1).slice(0,15).includes(id)?"on":""}">${BY[id].region}</span>`).join("")}</div><div class="det" style="margin-top:6px">En doré : celles que tu avais dans ton top 15.</div>`:`<div class="det">Pas encore de résultats.</div>`}</div>`;
+  [1,2,3].forEach(n=>{const f=frRef(n);if(f&&f.length){const k=MANCHES[n].k;html+=`<div class="box"><h3>Manche ${n} · ce qu'a choisi la France</h3>${f.slice(0,k).map((id,i)=>`<div class="rk p${i+1}"><div class="pos">${i+1}</div><div class="grow"><b>Miss ${BY[id].region}</b></div></div>`).join("")}<div class="det" style="margin-top:6px">D'après ${FR[n].voters} classement${FR[n].voters>1?"s":""}.</div></div>`;}});
+  html+=`<div class="box"><h3>L'appli en chiffres</h3><div class="stat"><div><b>${STATS?.players??"–"}</b>joueuses</div><div><b>${STATS?.voters??"–"}</b>classements</div></div></div>
+  <button class="btn wide" data-a="story">Partager mon top en story</button>`;
+  return html;
+}
+
+function vProfil(){
+  return `<h2>Mon profil</h2>
+  <div class="box"><h3>Prénom & emoji</h3><form id="fname" class="row"><input class="field grow" id="pname" maxlength="20" value="${esc(P.name)}"><button class="btn">OK</button></form>
+    <div class="emojis">${EMOJIS.map(e=>`<button data-a="emoji" data-v="${e}" class="${P.emoji===e?"on":""}">${e}</button>`).join("")}</div></div>
+  <div class="box"><h3>Mes critères de notes</h3>
+    <div class="seg"><button data-a="mode" data-v="detail" class="${P.mode!=="global"?"on":""}">Par critères</button><button data-a="mode" data-v="global" class="${P.mode==="global"?"on":""}">Note globale</button></div>
+    ${P.mode!=="global"?`<div style="margin-top:8px">${CRITS.map(c=>`<div class="toggle"><span>${c.label}</span><button class="sw ${(P.crits||[]).includes(c.id)?"on":""}" data-a="crit" data-v="${c.id}" aria-label="${c.label}"></button></div>`).join("")}</div>`
+      :`<div class="det" style="margin-top:10px">Une seule note sur 10 par candidate.</div>`}
+    <div class="det" style="margin-top:8px">Les notes servent pour tes groupes de copines et pour pré-remplir ton classement. Le grand jeu, lui, se joue sur ton classement.</div></div>
+  <div class="box"><h3>Mon code perso</h3><div class="sub">Garde-le précieusement : il te permet de retrouver ton profil sur un autre téléphone.</div>
+    <div class="bigcode">${UI.rcode?esc(UI.rcode):`<button class="btn sm" data-a="showcode">Afficher mon code</button>`}</div></div>
+  <div style="text-align:center;margin:18px 0"><a class="link" href="/admin/" style="font-size:12px;color:var(--brume)">Espace admin</a></div>`;
+}
+
+
+/* ===================== VUE QUIZ ===================== */
+const QKEY="lelue-quiz";
+function qState(){ if(!UI.qz){ try{UI.qz=JSON.parse(ls.get(QKEY))||null;}catch(e){} if(!UI.qz) UI.qz={i:0,ans:[],started:false,done:false,review:false}; } return UI.qz; }
+function qSave(){ ls.set(QKEY,JSON.stringify(UI.qz)); }
+const qCorrect=ans=>QUIZ.filter((q,i)=>ans[i]===q[3]).length;
+const qNote=c=>Math.round(c/QUIZ.length*200)/10;
+function vCulture(){
+  const q=qState();
+  if(!q.started) {
+    const prev=P.quiz_total?qNote(P.quiz_score):null;
+    return `<button class="link" data-a="test" data-v="" style="margin-top:14px">← Tous les tests</button><h2>Le test de culture G des Miss</h2>
+    <div class="box"><p style="margin-bottom:10px">Les 31 candidates ont passé leur test de culture générale pendant leur voyage à Saint-Martin. <b>Et toi, tu aurais eu combien ?</b></p>
+    <div class="stat" style="margin:12px 0"><div><b>${QUIZ.length}</b>questions</div><div><b>/20</b>la note</div><div><b>${STATS?.quiz_avg??"–"}</b>moyenne France</div></div>
+    <p class="det">Actualité, culture web, arts & mode, histoire, géographie, français, logique… Pas de chrono, prends ton temps. Ta note s'affiche dans tes groupes et compte pour la moyenne de la France.</p>
+    ${prev!==null?`<div class="note">Ta note : <b>${prev}/20</b>. Tu peux le refaire pour le fun, mais c'est ta première note qui compte.</div>`:""}
+    <button class="btn gold wide" style="margin-top:12px" data-a="qstart">${prev!==null?"Le refaire":"Commencer le test"}</button></div>`;
+  }
+  if(!q.done){
+    const it=QUIZ[q.i];
+    return `<div class="row" style="margin-top:14px"><span class="pill gold">${it[0]}</span><span class="det" style="margin-left:auto">Question ${q.i+1}/${QUIZ.length}</span></div>
+    <div class="prog"><i style="width:${q.i/QUIZ.length*100}%"></i></div>
+    <h2 style="font-size:22px;line-height:1.3;margin:16px 0 10px">${esc(it[1])}</h2>
+    ${it[2].map((o,k)=>`<button class="qopt ${q.ans[q.i]===k?"on":""}" data-a="qans" data-v="${k}">${esc(o)}</button>`).join("")}
+    <div class="row" style="justify-content:space-between;margin-top:10px">${q.i>0?`<button class="btn sm ghost" data-a="qprev">← Précédente</button>`:"<span></span>"}<button class="btn sm ghost" data-a="qquit">Abandonner</button></div>`;
+  }
+  const c=qCorrect(q.ans), note=qNote(c);
+  const themes=[...new Set(QUIZ.map(x=>x[0]))].map(t=>{const idx=QUIZ.map((x,i)=>i).filter(i=>QUIZ[i][0]===t);return {t,ok:idx.filter(i=>q.ans[i]===QUIZ[i][3]).length,n:idx.length};});
+  const L=LEAGUES.find(l=>l.id===UI.league), mates=L?(LP[L.id]||[]).map(p=>p.id===P.id?P:p).filter(p=>p.quiz_total).map(p=>({p,n:qNote(p.quiz_score)})).sort((a,b)=>b.n-a.n):[];
+  const avgF=STATS?.quiz_avg;
+  let html=`<h2>Ton résultat</h2>
+  <div class="box" style="text-align:center"><div class="qnote">${String(note).replace(".",",")}<small>/20</small></div>
+    <div class="sub" style="margin-top:8px">${c} bonnes réponses sur ${QUIZ.length}${avgF!=null?` · moyenne de la France : <b style="color:var(--ivoire)">${String(avgF).replace(".",",")}/20</b>`:""}</div>
+    <div class="sub">${note>=16?"Digne d'une Miss France !":note>=12?"Bravo, tu aurais fait bonne figure à Saint-Martin.":note>=8?"Pas mal ! Quelques révisions et c'est la couronne.":"L'important, c'est l'écharpe !"}</div>
+    <button class="btn gold wide" data-a="qstory">Partager ma note en story</button></div>
+  <div class="box"><h3>Par thème</h3>${themes.map(x=>`<div class="rk"><div class="grow">${x.t}</div><span class="val">${x.ok}/${x.n}</span></div>`).join("")}</div>`;
+  if(mates.length) html+=`<div class="box"><h3>${esc(L.name)}</h3>${mates.map((x,i)=>`<div class="lb ${x.p.id===P.id?"mine":""}"><div class="av">${esc(x.p.emoji)}</div><div class="grow"><b>${esc(x.p.name)}</b></div><div class="tot">${String(x.n).replace(".",",")}</div></div>`).join("")}</div>`;
+  html+=`<div class="box"><details ${q.review?"open":""}><summary>Voir les corrections</summary>${QUIZ.map((it,i)=>`<div style="margin-top:14px"><div class="det">${i+1}. ${it[0]}</div><b>${esc(it[1])}</b>
+    <div class="qopt good" style="padding:8px 12px">${esc(it[2][it[3]])}</div>${q.ans[i]!==it[3]?`<div class="qopt bad" style="padding:8px 12px">Ta réponse : ${q.ans[i]!=null?esc(it[2][q.ans[i]]):"—"}</div>`:""}<div class="det">${esc(it[4])}</div></div>`).join("")}</details></div>
+  <button class="btn wide" data-a="qstart">Refaire le test</button>
+  <p class="det" style="text-align:center;margin:22px 0 6px;opacity:.7">Curieuse ? Le test passé par les candidates a été publié dans la presse : <a href="${QUIZ_REAL_TEST}" target="_blank" rel="noopener">le voir ici</a>.</p>`;
+  return html;
+}
+
+
+function vQuiz(){
+  if(UI.test==="culture") return vCulture();
+  if(UI.test==="perso") return vPerso();
+  const me=P.soulmate&&BY[P.soulmate];
+  return `<h2 class="goldtx">En attendant le grand soir</h2><div class="sub">Deux tests pour patienter jusqu'au 12 décembre.</div>
+  <button class="testcard" data-a="test" data-v="perso"><b class="goldtx">Quelle Miss es-tu ?</b><span>10 questions façon magazine${me?` · ta Miss : Miss ${me.region}`:""}</span></button>
+  <button class="testcard" data-a="test" data-v="culture"><b class="goldtx">Le test de culture G des Miss</b><span>${QUIZ.length} questions · ${P.quiz_total?`ta note : ${String(qNote(P.quiz_score)).replace(".",",")}/20`:"ta note sur 20"}</span></button>`;
+}
+const PKEY="lelue-perso";
+function pState(){ if(!UI.ps){ try{UI.ps=JSON.parse(ls.get(PKEY))||null;}catch(e){} if(!UI.ps) UI.ps={i:0,ans:[],started:false,done:false}; } return UI.ps; }
+function pSave(){ ls.set(PKEY,JSON.stringify(UI.ps)); }
+function vPerso(){
+  const q=pState(), back=`<button class="link" data-a="test" data-v="" style="margin-top:14px">← Tous les tests</button>`;
+  if(!q.started) return back+`<h2>Quelle Miss es-tu ?</h2><div class="box"><p style="margin-bottom:10px">Sportive, solaire, aventurière ou cœur tendre ? Réponds à 10 questions et découvre laquelle des 31 candidates te ressemble le plus.</p>
+    <p class="det">Réponds spontanément, il n'y a pas de bonne réponse !</p><button class="btn gold wide" style="margin-top:12px" data-a="pstart">Je fais le test</button></div>`;
+  if(!q.done){ const it=PERSO_Q[q.i];
+    return `<div class="row" style="margin-top:14px"><span class="pill gold">Quelle Miss es-tu ?</span><span class="det" style="margin-left:auto">${q.i+1}/${PERSO_Q.length}</span></div>
+    <div class="prog"><i style="width:${q.i/PERSO_Q.length*100}%"></i></div>
+    <h2 style="font-size:24px;line-height:1.3;margin:16px 0 10px">${esc(it[0])}</h2>
+    ${it[1].map((o,k)=>`<button class="qopt ${q.ans[q.i]===k?"on":""}" data-a="pans" data-v="${k}"><b style="color:var(--or);margin-right:8px">${"ABCDE"[k]}</b>${esc(o[0])}</button>`).join("")}
+    ${q.i>0?`<button class="btn sm ghost" data-a="pprev" style="margin-top:10px">← Précédente</button>`:""}`; }
+  const r=persoResult(q.ans), c=BY[r.id], txt=PERSO[r.id][1], isMine=P.soulmate===r.id;
+  return back+`<div class="box" style="text-align:center;margin-top:12px"><div class="det" style="text-transform:uppercase;letter-spacing:2px">Tu es…</div>
+    <div class="logo" style="font-size:40px;margin:8px 0;line-height:1.1">Miss ${c.region}</div><div class="sub">${c.name}</div>
+    <p style="text-align:left;margin:10px 0">${esc(txt)}</p>
+    ${r.common.length?`<div class="det" style="text-align:left">Vos points communs : ${r.common.map(t=>TAGLABEL[t]).join(", ")}.</div>`:""}
+    <button class="btn gold wide" style="margin-top:14px;padding:14px" data-a="psoul" data-v="${r.id}" ${isMine?"disabled":""}>${isMine?"C'est ta Miss de cœur":"En faire ma Miss de cœur"}</button>
+    <div class="det" style="margin-top:6px">Elle aura un petit diadème partout dans l'appli, et tu pourras suivre son parcours le soir de l'élection.</div>
+    <button class="btn wide" style="margin-top:10px" data-a="pstory" data-v="${r.id}">Partager en story</button></div>
+  <button class="btn wide ghost" data-a="pstart">Refaire le test</button>`;
+}
+async function makePersoStory(id){
+  const c=BY[id]; const cv=document.createElement("canvas"); cv.width=1080; cv.height=1920; const g=cv.getContext("2d");
+  try{await document.fonts.load("italic 800 150px 'Playfair Display'");await document.fonts.load("800 120px 'Playfair Display'");await document.fonts.load("500 40px 'DM Sans'");}catch(e){}
+  const bg=g.createRadialGradient(540,200,50,540,700,1400); bg.addColorStop(0,"#4A2157"); bg.addColorStop(1,"#1B0E22"); g.fillStyle=bg; g.fillRect(0,0,1080,1920); await drawTiara(g);
+  const gold=g.createLinearGradient(100,0,980,0); gold.addColorStop(0,"#f2c46d"); gold.addColorStop(.5,"#fff1cf"); gold.addColorStop(1,"#e0a63a");
+  g.textAlign="center"; g.fillStyle=gold; g.font="italic 800 150px 'Playfair Display'"; g.fillText("L'Élue",540,360);
+  g.fillStyle="#b9a8cc"; g.font="500 52px 'DM Sans'"; g.fillText("Quelle Miss es-tu ?",540,600); g.fillText("Je suis…",540,720);
+  g.fillStyle=gold; let fs=130; g.font=`800 ${fs}px 'Playfair Display'`; while(g.measureText("Miss "+c.region).width>960&&fs>60){fs-=6;g.font=`800 ${fs}px 'Playfair Display'`;}
+  g.fillText("Miss "+c.region,540,950);
+  g.fillStyle="#f6effa"; g.font="500 52px 'DM Sans'"; g.fillText(c.name,540,1060);
+  g.fillStyle="#f6effa"; g.font="700 52px 'DM Sans'"; g.fillText("Et toi, quelle Miss es-tu ?",540,1500);
+  g.fillStyle="#f2c46d"; g.font="700 44px 'DM Sans'"; g.fillText(SITE,540,1830);
+  return new Promise(res=>cv.toBlob(b=>res({blob:b,url:cv.toDataURL("image/png")}),"image/png"));
+}
+
+/* ===================== ADMIN ===================== */
+function vAdmin(){
+  if(!UI.adminPwd) return `<div class="welcome" style="padding-top:40px"><img src="/icons/diademe.webp" alt="" style="width:160px"><div class="logo shine" style="font-size:44px">Admin</div><div class="box"><h3>Espace admin</h3>
+    <form id="fadmin"><input class="field" type="password" id="apwd" placeholder="Mot de passe admin"><button class="btn gold wide" style="margin-top:10px">Entrer</button></form>
+    <p style="margin-top:12px;text-align:center"><a class="link" href="/">← Retour à l'appli</a></p></div></div>`;
+  const n=Math.min(R.manche,3), locked=R.votes_locked;
+  const toLocal=d=>{if(!d)return"";const x=new Date(d);const p=v=>String(v).padStart(2,"0");return `${x.getFullYear()}-${p(x.getMonth()+1)}-${p(x.getDate())}T${p(x.getHours())}:${p(x.getMinutes())}`;};
+  let action="";
+  if(R.manche>3) action=`<div class="det">La soirée est terminée. Le résultat final est en ligne.</div>`;
+  else if(!locked) action=`<button class="btn gold wide" data-a="alock">Fermer la manche ${n}</button><div class="det" style="margin-top:6px">${n===1?"À faire après les portraits vidéo, juste avant l'annonce du top 15.":n===2?"À faire juste avant l'annonce du top 5.":"À faire juste avant l'annonce de Miss France."}</div>`;
+  else{
+    const pk=UI.adminPick||(UI.adminPick={top15:[...R.top15],top5:[...R.top5],ord:[...R.ord]});
+    if(n===1) action=`<h3>Le vrai top 15 <span class="counter ${pk.top15.length===15?"full":""}">${pk.top15.length}/15</span></h3><div class="picks">${CANDS.map(c=>`<button class="pk ${pk.top15.includes(c.id)?"on":""}" data-a="apick" data-l="15" data-v="${c.id}">${c.region}</button>`).join("")}</div>
+      <button class="btn gold wide" style="margin-top:12px" data-a="anext" ${pk.top15.length===15?"":"disabled"}>Valider le top 15 et ouvrir la manche 2</button>`;
+    if(n===2) action=`<h3>Le vrai top 5 <span class="counter ${pk.top5.length===5?"full":""}">${pk.top5.length}/5</span></h3><div class="picks">${R.top15.map(id=>`<button class="pk ${pk.top5.includes(id)?"on":""}" data-a="apick" data-l="5" data-v="${id}">${BY[id].region}</button>`).join("")}</div>
+      <button class="btn gold wide" style="margin-top:12px" data-a="anext" ${pk.top5.length===5?"":"disabled"}>Valider le top 5 et ouvrir la manche 3</button>`;
+    if(n===3) action=`<h3>Le classement final</h3><div class="det" style="margin-bottom:6px">Touche les 5 dans l'ordre, de Miss France à la 4e dauphine.</div><div class="picks">${R.top5.map(id=>{const i=pk.ord.indexOf(id);return `<button class="pk ${i>=0?"on":""}" data-a="apick" data-l="0" data-v="${id}">${i>=0?`<span class="rkb">${i+1}</span>`:""}${BY[id].region}</button>`}).join("")}</div>
+      ${pk.ord.map((id,i)=>`<div class="rk"><div class="pos">${i+1}</div><div class="grow">${ORDER_LABELS[i]}</div><b>${id?"Miss "+BY[id].region:"—"}</b></div>`).join("")}
+      <button class="btn gold wide" style="margin-top:12px" data-a="anext" ${pk.ord.every(Boolean)?"":"disabled"}>Valider le résultat final</button>`;
+    action+=`<button class="btn sm ghost" style="margin-top:10px" data-a="aunlock">Rouvrir la manche ${n}</button>`;
+  }
+  const frs=[1,2,3].filter(k=>k<=n).map(k=>{const f=UI.adminFR[k];const kk=MANCHES[k].k;return `<div class="box"><h3>Manche ${k} · classement de la France ${FR[k]&&!FR[k].hidden?`<span class="pill ok">révélé</span>`:`<span class="pill">caché aux joueuses</span>`}</h3>
+    ${f?(f.order.length?filterTo(f.order,pool(k)).slice(0,kk).map((id,i)=>`<div class="rk p${i+1}"><div class="pos">${i+1}</div><div class="grow"><b>Miss ${BY[id].region}</b></div></div>`).join("")+`<div class="det" style="margin-top:6px">${f.voters} classement${f.voters>1?"s":""}</div>`:`<div class="det">Aucun classement pour l'instant.</div>`):`<button class="btn sm" data-a="afr" data-v="${k}">Voir (en avant-première)</button>`}</div>`;}).join("");
+  return `<header><div class="brand"><img src="/icons/diademe.webp" alt=""><div class="logo shine">L'Élue</div></div><span class="pill gold" style="margin-left:auto">Admin</span><button class="btn sm ghost" data-a="alogout">Déconnexion</button></header>
+  <div class="box">${vCountdown()}</div>${vSteps()}
+  <div class="box"><h3>${R.manche>3?"Soirée terminée":`Manche ${n} · ${MANCHES[n].name} · ${locked?"fermée":"ouverte"}`}</h3>${action}</div>
+  <div class="box"><h3>Horaires du compte à rebours</h3>
+    <div class="det">Début de l'émission</div><input class="field" type="datetime-local" id="ashow" value="${toLocal(R.show_at)}">
+    <div class="det" style="margin-top:10px">Fermeture prévue de la manche en cours (facultatif)</div><input class="field" type="datetime-local" id="aclose" value="${toLocal(R.close_at)}">
+    <button class="btn sm" style="margin-top:10px" data-a="atimes">Enregistrer les horaires</button>
+    <div class="det" style="margin-top:6px">C'est toujours toi qui fermes la manche avec le bouton. L'heure sert juste au compte à rebours.</div></div>
+  <div class="box"><h3>Stats</h3><div class="stat"><div><b>${STATS?.players??"–"}</b>joueuses</div><div><b>${STATS?.voters??"–"}</b>classements</div><div><b>${STATS?.quiz_avg??"–"}</b>quiz /20</div></div>
+    <div class="row" style="margin-top:10px"><button class="btn sm" data-a="arefresh">Actualiser</button><button class="btn sm gold" data-a="acopy">Copier le récap pour les réseaux</button></div></div>
+  ${frs}
+  <div class="box"><h3>Tests</h3><div class="det">Pour répéter la soirée avant le jour J : remet la soirée à la manche 1 et efface les manches 2 et 3 (les classements de manche 1 et les notes sont gardés).</div>
+    <button class="btn sm danger" style="margin-top:10px" data-a="areset">Réinitialiser la soirée</button></div>
+  <p style="text-align:center;margin:16px 0"><a class="link" href="/">← Retour à l'appli</a></p>`;
+}
+
+/* ===================== GLISSER-DÉPOSER ===================== */
+let DRAG=null, pressTimer=null, pressStart=null;
+document.addEventListener("touchmove",e=>{if(DRAG)e.preventDefault();},{passive:false});
+document.addEventListener("contextmenu",e=>{if(DRAG||e.target.closest(".rank li"))e.preventDefault();});
+document.addEventListener("pointerdown",e=>{
+  const li=e.target.closest("#rank li[data-id]"); if(!li||e.target.closest("[data-a=moveto]")) return;
+  if(e.target.closest(".handle")){e.preventDefault();startDrag(li,e);return;}
+  pressStart={x:e.clientX,y:e.clientY,id:e.pointerId};
+  clearTimeout(pressTimer); pressTimer=setTimeout(()=>{if(pressStart){navigator.vibrate&&navigator.vibrate(15);startDrag(li,{clientX:pressStart.x,clientY:pressStart.y,pointerId:pressStart.id});}},380);
+});
+document.addEventListener("pointermove",e=>{
+  if(pressStart&&!DRAG&&Math.hypot(e.clientX-pressStart.x,e.clientY-pressStart.y)>8){clearTimeout(pressTimer);pressStart=null;}
+  if(!DRAG) return; e.preventDefault(); DRAG.y=e.clientY; moveGhost();
+});
+document.addEventListener("pointerup",endPress); document.addEventListener("pointercancel",endPress);
+function endPress(){clearTimeout(pressTimer);pressStart=null;if(DRAG)endDrag();}
+function startDrag(li,e){
+  const list=document.getElementById("rank"), r=li.getBoundingClientRect();
+  const ph=document.createElement("li"); ph.className="ph"; ph.style.height=r.height+"px";
+  li.parentNode.insertBefore(ph,li);
+  li.classList.add("ghost"); li.style.width=r.width+"px"; li.style.left=r.left+"px"; li.style.top=r.top+"px";
+  DRAG={li,ph,list,off:e.clientY-r.top,y:e.clientY}; document.body.classList.add("dragging");
+  const loop=()=>{ if(!DRAG) return; const y=DRAG.y, H=window.innerHeight;
+    if(y<110) window.scrollBy(0,-Math.ceil((110-y)/6)); else if(y>H-150) window.scrollBy(0,Math.ceil((y-(H-150))/6));
+    moveGhost(); requestAnimationFrame(loop); };
+  requestAnimationFrame(loop);
+}
+function moveGhost(){
+  const {li,ph,list,off,y}=DRAG; li.style.top=(y-off)+"px";
+  const items=[...list.querySelectorAll("li[data-id]:not(.ghost)")];
+  let before=null; for(const it of items){const r=it.getBoundingClientRect(); if(y<r.top+r.height/2){before=it;break;}}
+  if(before){ if(ph.nextElementSibling!==before) list.insertBefore(ph,before.previousElementSibling&&before.previousElementSibling.classList.contains("cut")?before.previousElementSibling:before); }
+  else if(list.lastElementChild!==ph) list.appendChild(ph);
+}
+function endDrag(){
+  const {li,ph,list}=DRAG; list.insertBefore(li,ph); ph.remove();
+  li.classList.remove("ghost"); li.style.cssText=""; DRAG=null; document.body.classList.remove("dragging");
+  const order=[...list.querySelectorAll("li[data-id]")].map(x=>x.dataset.id), n=+list.dataset.n;
+  if(order.join()!==roundOf(P,n).join()){ if(!isOpen()||n!==R.manche){toast(ERRORS.VOTES_LOCKED,true);render();return;} saveRound(n,order); }
+  render();
+}
+
+/* ===================== CARTE STORY ===================== */
+let TIARA_IMG=null;
+function tiaraImg(){ if(TIARA_IMG) return TIARA_IMG; TIARA_IMG=new Promise(res=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>res(null);i.src="/icons/diademe.webp";}); return TIARA_IMG; }
+async function drawTiara(g){ const i=await tiraWait(); if(i){ g.save(); g.shadowColor="rgba(246,218,142,.45)"; g.shadowBlur=40; g.drawImage(i,540-130,40,260,260*i.height/i.width); g.restore(); } }
+function tiraWait(){ return tiaraImg(); }
+
+async function makeStory(){
+  const n=Math.min(R.manche,3), order=roundOf(P,n).slice(0,n===1?10:5);
+  const cv=document.createElement("canvas"); cv.width=1080; cv.height=1920; const g=cv.getContext("2d");
+  try{await document.fonts.load("800 120px 'Playfair Display'");await document.fonts.load("italic 800 120px 'Playfair Display'");await document.fonts.load("500 40px 'DM Sans'");}catch(e){}
+  const bg=g.createRadialGradient(540,200,50,540,700,1400); bg.addColorStop(0,"#4A2157"); bg.addColorStop(1,"#1B0E22"); g.fillStyle=bg; g.fillRect(0,0,1080,1920); await drawTiara(g);
+  const gold=g.createLinearGradient(240,0,840,0); gold.addColorStop(0,"#f2c46d"); gold.addColorStop(.5,"#fff1cf"); gold.addColorStop(1,"#e0a63a");
+  g.textAlign="center"; g.fillStyle=gold; g.font="italic 800 150px 'Playfair Display'"; g.fillText("L'Élue",540,360);
+  g.fillStyle="#b9a8cc"; g.font="500 44px 'DM Sans'"; g.fillText(n===3?"Mon classement final":n===2?"Mon top 5":"Mon top "+order.length,540,440);
+  const top=510, step=n===1?114:186;
+  order.forEach((id,i)=>{const y=top+i*step; const c=BY[id];
+    g.fillStyle="rgba(255,255,255,0.07)"; roundRect(g,110,y,860,step-24,28); g.fill();
+    g.textAlign="left"; g.fillStyle=i<3?"#f2c46d":"#b9a8cc"; g.font=`800 ${n===1?56:72}px 'Playfair Display'`; g.fillText(String(i+1),150,y+(step-24)/2+(n===1?20:26));
+    g.fillStyle="#f6effa"; g.font=`700 ${n===1?44:56}px 'DM Sans'`; g.fillText("Miss "+c.region,260,y+(step-24)/2+(n===1?16:20));});
+  g.textAlign="center"; g.fillStyle="#b9a8cc"; g.font="500 40px 'DM Sans'"; g.fillText("Et toi, c'est qui ton élue ?",540,1760); g.fillStyle="#f2c46d"; g.font="700 44px 'DM Sans'"; g.fillText(SITE,540,1830);
+  return new Promise(res=>cv.toBlob(b=>res({blob:b,url:cv.toDataURL("image/png")}),"image/png"));
+}
+function roundRect(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
+
+function showStory(s){ const file=new File([s.blob],"lelue.png",{type:"image/png"});
+  modal(`<img class="storyprev" src="${s.url}" alt="Ma story L'Élue"><div class="row"><button class="btn gold grow" id="sshare">Partager</button><a class="btn" href="${s.url}" download="lelue.png">Télécharger</a></div><button class="btn sm ghost wide" data-a="closemodal" style="margin-top:8px">Fermer</button>`);
+  document.getElementById("sshare").onclick=async()=>{try{if(navigator.canShare&&navigator.canShare({files:[file]})) await navigator.share({files:[file],text:`Sur L'Élue 👑 ${SITE}`}); else toast("Utilise « Télécharger » puis poste l'image en story");}catch(err){}};
+}
+async function makeQuizStory(note){
+  const cv=document.createElement("canvas"); cv.width=1080; cv.height=1920; const g=cv.getContext("2d");
+  try{await document.fonts.load("italic 800 150px 'Playfair Display'");await document.fonts.load("800 300px 'Playfair Display'");await document.fonts.load("500 40px 'DM Sans'");}catch(e){}
+  const bg=g.createRadialGradient(540,200,50,540,700,1400); bg.addColorStop(0,"#4A2157"); bg.addColorStop(1,"#1B0E22"); g.fillStyle=bg; g.fillRect(0,0,1080,1920); await drawTiara(g);
+  const gold=g.createLinearGradient(200,0,880,0); gold.addColorStop(0,"#f2c46d"); gold.addColorStop(.5,"#fff1cf"); gold.addColorStop(1,"#e0a63a");
+  g.textAlign="center"; g.fillStyle=gold; g.font="italic 800 150px 'Playfair Display'"; g.fillText("L'Élue",540,360);
+  g.fillStyle="#b9a8cc"; g.font="500 48px 'DM Sans'"; g.fillText("Le test de culture G des Miss",540,560); g.fillText("j'ai eu…",540,630);
+  g.fillStyle=gold; g.font="800 300px 'Playfair Display'"; g.fillText(String(note).replace(".",","),540,1010);
+  g.fillStyle="#b9a8cc"; g.font="800 110px 'Playfair Display'"; g.fillText("/ 20",540,1150);
+  g.fillStyle="#f6effa"; g.font="700 52px 'DM Sans'"; g.fillText("Et toi, tu aurais eu combien ?",540,1500);
+  g.fillStyle="#f2c46d"; g.font="700 44px 'DM Sans'"; g.fillText(SITE,540,1830);
+  return new Promise(res=>cv.toBlob(b=>res({blob:b,url:cv.toDataURL("image/png")}),"image/png"));
+}
+/* ===================== ACTIONS ===================== */
+function modal(html){document.getElementById("overlay").innerHTML=`<div class="modal" data-a="closemodal"><div class="box">${html}</div></div>`;}
+function closeModal(){document.getElementById("overlay").innerHTML="";}
+function confirmBox(text,ok){modal(`<p style="margin-bottom:14px">${text}</p><div class="row" style="justify-content:flex-end"><button class="btn sm" data-a="closemodal">Annuler</button><button class="btn sm gold" id="cyes">Confirmer</button></div>`);document.getElementById("cyes").onclick=()=>{closeModal();ok();};}
+async function copyText(t){try{await navigator.clipboard.writeText(t);toast("Copié !");return true;}catch(e){modal(`<p style="margin-bottom:8px">Copie ce texte :</p><textarea class="copyarea" readonly>${esc(t)}</textarea><button class="btn sm" data-a="closemodal" style="margin-top:10px">Fermer</button>`);return false;}}
+async function doJoin(code){
+  pendingJoin=null; if(location.hash.startsWith("#rejoindre")) history.replaceState(null,"",location.pathname);
+  try{const l=await API.joinLeague(code);toast(`Bienvenue dans « ${l.name} »`);UI.league=l.id;ls.set("cp-league",l.id);UI.tab="groupes";await refreshLeagues();}
+  catch(e){toast(errMsg(e),true);}
+}
+async function adminDo(fn){try{await fn();await refreshShared();UI.adminFR={};render();}catch(err){toast(errMsg(err),true);}}
+
+document.addEventListener("click",async e=>{
+  const b=e.target.closest("[data-a]"); if(!b||b.disabled) return;
+  const a=b.dataset.a, v=b.dataset.v;
+  switch(a){
+    case "closemodal": if(e.target===b||b.tagName==="BUTTON") closeModal(); return;
+    case "welcome": UI.welcome=v; break;
+    case "wemoji": UI.emoji=v; document.querySelectorAll("[data-a=wemoji]").forEach(x=>x.classList.toggle("on",x.dataset.v===v)); return;
+    case "tab": UI.tab=v; window.scrollTo(0,0); if(v==="resultats"||v==="jouer") refreshShared().then(()=>render(true)); if(v==="groupes"&&UI.league) loadLeague(UI.league).then(()=>render(true)); break;
+    case "filter": UI.filter=v; break;
+    case "open": UI.open=UI.open===v?null:v; break;
+    case "note": { const notes=JSON.parse(JSON.stringify(P.notes||{})); const n=notes[b.dataset.c]||(notes[b.dataset.c]={}); const val=+v;
+      if(n[b.dataset.k]===val) delete n[b.dataset.k]; else n[b.dataset.k]=val; patch({notes}); break; }
+    case "next": { const i=CANDS.findIndex(c=>c.id===v); const nx=CANDS.slice(i+1).concat(CANDS.slice(0,i)).find(c=>!done(P,c.id)); UI.open=nx?nx.id:null; if(!nx) toast("Toutes notées !");
+      setTimeout(()=>{const el=document.querySelector(".cand.open"); el&&el.scrollIntoView({behavior:"smooth",block:"start"});},30); break; }
+    case "coeur": patch({coeur:P.coeur===v?null:v}); if(P.coeur) toast(`Coup de cœur : Miss ${BY[v].region}`); break;
+    case "test": UI.test=v||null; window.scrollTo(0,0); break;
+    case "pstart": UI.ps={i:0,ans:[],started:true,done:false}; pSave(); window.scrollTo(0,0); break;
+    case "pans": { const q=pState(); q.ans[q.i]=+v; if(q.i<PERSO_Q.length-1) q.i++; else q.done=true; pSave(); window.scrollTo(0,0); break; }
+    case "pprev": { const q=pState(); if(q.i>0) q.i--; pSave(); break; }
+    case "psoul": patch({soulmate:v}); toast(`Miss ${BY[v].region} est ta Miss de cœur`); break;
+    case "pstory": showStory(await makePersoStory(v)); return;
+    case "qstart": UI.qz={i:0,ans:[],started:true,done:false}; qSave(); window.scrollTo(0,0); break;
+    case "qans": { const q=qState(); q.ans[q.i]=+v; if(q.i<QUIZ.length-1) q.i++; else { q.done=true; const c=qCorrect(q.ans);
+        if(!P.quiz_total){ patch({quiz_score:c,quiz_total:QUIZ.length}); refreshShared().then(()=>render(true)); } }
+      qSave(); window.scrollTo(0,0); break; }
+    case "qprev": { const q=qState(); if(q.i>0) q.i--; qSave(); break; }
+    case "qquit": confirmBox("Abandonner le test ? Tes réponses seront perdues.",()=>{UI.qz={i:0,ans:[],started:false,done:false};qSave();render();}); return;
+    case "qstory": { const q=qState(); const s=await makeQuizStory(qNote(qCorrect(q.ans))); showStory(s); return; }
+    case "goto-rank": { const t=document.getElementById("rank-title"); t&&t.scrollIntoView({behavior:"smooth",block:"start"}); return; }
+    case "sendr1": saveRound(1,roundOf(P,1)); toast("Classement envoyé !"); break;
+    case "resort": confirmBox("Re-trier ton classement d'après tes notes ? Tes déplacements à la main seront remplacés.",()=>{saveRound(1,notesOrder(P));render();}); return;
+    case "moveto": { if(!isOpen()) return; const n=R.manche, order=roundOf(P,n), i=order.indexOf(v);
+      modal(`<p style="margin-bottom:10px">Déplacer <b>Miss ${BY[v].region}</b> à la place n°</p><form id="fmove" class="row"><input class="field grow" id="mpos" type="number" min="1" max="${order.length}" value="${i+1}" inputmode="numeric"><button class="btn gold">OK</button></form><input type="hidden" id="mid" value="${v}">`);
+      setTimeout(()=>{const x=document.getElementById("mpos");x&&x.select();},50); return; }
+    case "story": { showStory(await makeStory()); return; }
+    case "league": UI.league=v; ls.set("cp-league",v); await loadLeague(v); break;
+    case "share": { const l=LEAGUES.find(x=>x.id===v); const url=location.origin+location.pathname+"#rejoindre-"+l.code;
+      const t=`Rejoins mon groupe « ${l.name} » sur L'Élue 👑\nOn note les candidates et on fait nos pronos avant l'élection !\nCode : ${l.code}\n${url}`;
+      if(navigator.share){try{await navigator.share({text:t});return;}catch(err){}} copyText(t); return; }
+    case "leave": confirmBox("Quitter ce groupe ? Tes notes et ton classement sont conservés.",async()=>{try{await API.leaveLeague(v,P.id);UI.league=null;await refreshLeagues();render();}catch(err){toast(errMsg(err),true);}}); return;
+    case "emoji": patch({emoji:v}); break;
+    case "mode": patch({mode:v}); break;
+    case "crit": { const c=new Set(P.crits||[]); c.has(v)?c.delete(v):c.add(v); patch({crits:[...c]}); break; }
+    case "showcode": try{UI.rcode=await API.recoveryCode();}catch(err){toast(errMsg(err),true);} break;
+    /* admin */
+    case "alock": confirmBox(`Fermer la manche ${R.manche} ? Plus personne ne pourra modifier son classement, et le classement de la France sera révélé.`,()=>adminDo(()=>API.adminSetState(UI.adminPwd,{manche:R.manche,locked:true,show_at:R.show_at,close_at:null}))); return;
+    case "aunlock": UI.adminPick=null; adminDo(()=>API.adminSetState(UI.adminPwd,{manche:R.manche,locked:false,show_at:R.show_at,close_at:R.close_at})); return;
+    case "apick": { const pk=UI.adminPick, l=+b.dataset.l;
+      if(l===15){pk.top15=pk.top15.includes(v)?pk.top15.filter(x=>x!==v):pk.top15.length<15?[...pk.top15,v]:pk.top15;}
+      else if(l===5){pk.top5=pk.top5.includes(v)?pk.top5.filter(x=>x!==v):pk.top5.length<5?[...pk.top5,v]:pk.top5;}
+      else{const o=[...pk.ord],i=o.indexOf(v); if(i>=0)o[i]=null; else{const f=o.indexOf(null); if(f>=0)o[f]=v;} pk.ord=o;}
+      break; }
+    case "anext": { const pk=UI.adminPick, n=R.manche;
+      const res=n===1?{top15:pk.top15,top5:[],ord:[null,null,null,null,null]}:n===2?{top15:R.top15,top5:pk.top5,ord:[null,null,null,null,null]}:{top15:R.top15,top5:R.top5,ord:pk.ord};
+      const txt=n===1?"Valider ce top 15 et ouvrir la manche 2 ?":n===2?"Valider ce top 5 et ouvrir la manche 3 ?":"Valider le résultat final ? Les points seront calculés pour tout le monde.";
+      confirmBox(txt,()=>adminDo(async()=>{await API.adminSetResults(UI.adminPwd,res); await API.adminSetState(UI.adminPwd,{manche:n+1,locked:n===3,show_at:R.show_at,close_at:null}); UI.adminPick=null;})); return; }
+    case "alogout": UI.adminPwd=""; ls.set("lelue-admin",""); break;
+    case "atimes": { const s=document.getElementById("ashow").value, c=document.getElementById("aclose").value;
+      adminDo(()=>API.adminSetState(UI.adminPwd,{manche:R.manche,locked:R.votes_locked,show_at:s?new Date(s).toISOString():R.show_at,close_at:c?new Date(c).toISOString():null})); toast("Horaires enregistrés"); return; }
+    case "afr": try{UI.adminFR[v]=await API.adminFranceRound(UI.adminPwd,+v);}catch(err){toast(errMsg(err),true);} break;
+    case "arefresh": await refreshShared(); UI.adminFR={}; toast("À jour"); break;
+    case "areset": confirmBox("Réinitialiser la soirée ? Retour à la manche 1, résultats officiels effacés, manches 2 et 3 effacées pour tout le monde.",()=>adminDo(async()=>{await API.adminReset(UI.adminPwd);UI.adminPick=null;})); return;
+    case "acopy": { const lines=[`L'Élue · ${STATS?.players||0} joueuses`];
+      for(const k of [1,2,3]){ if(k>R.manche) break; let f=UI.adminFR[k]; if(!f){try{f=UI.adminFR[k]=await API.adminFranceRound(UI.adminPwd,k);}catch(err){}} if(f&&f.order.length) lines.push(`\nManche ${k} · le choix de la France :\n`+filterTo(f.order,pool(k)).slice(0,MANCHES[k].k).map((id,i)=>`${i+1}. Miss ${BY[id].region}`).join("\n")); }
+      copyText(lines.join("\n")+"\n#LElue #MissFrance2027"); render(); return; }
+  }
+  render();
+});
+document.addEventListener("submit",async e=>{
+  e.preventDefault(); const id=e.target.id, btn=e.target.querySelector("button:not([type=button])"); if(btn) btn.disabled=true;
+  try{
+    if(id==="fwelcome"){ const name=document.getElementById("wname").value.trim(); if(!name){toast("Choisis un prénom");return;}
+      if(!await API.session()) await API.signIn(); P=await API.myProfile()||await API.createProfile(name,UI.emoji);
+      await refreshLeagues(); if(pendingJoin) await doJoin(pendingJoin); toast(`Bienvenue ${P.name} ${P.emoji}`); render(); }
+    if(id==="frecover"){ const code=document.getElementById("rcode").value.trim(); if(!code) return;
+      if(!await API.session()) await API.signIn(); await API.recover(code); P=await API.myProfile(); await refreshLeagues(); toast(`Re-bonjour ${P.name} ${P.emoji}`); render(); }
+    if(id==="fcreate"){ const l=await API.createLeague(document.getElementById("lname").value.trim()); UI.league=l.id; ls.set("cp-league",l.id); await refreshLeagues(); render(); toast(`Groupe créé : ${l.code}`); }
+    if(id==="fjoin"){ const code=document.getElementById("jcode").value.trim(); if(code){await doJoin(code); render();} }
+    if(id==="fname"){ const name=document.getElementById("pname").value.trim(); if(name){patch({name}); toast("Prénom modifié"); render();} }
+    if(id==="fmove"){ const v=document.getElementById("mid").value, n=R.manche, order=roundOf(P,n).filter(x=>x!==v);
+      let pos=Math.max(1,Math.min(order.length+1,parseInt(document.getElementById("mpos").value)||1)); order.splice(pos-1,0,v); saveRound(n,order); closeModal(); render(); }
+    if(id==="fadmin"){ const pwd=document.getElementById("apwd").value; if(await API.adminCheck(pwd)){UI.adminPwd=pwd;ls.set("lelue-admin",pwd); await refreshShared(); render();} else toast(ERRORS.NOT_ADMIN,true); }
+  }catch(err){toast(errMsg(err),true);}
+  finally{if(btn&&document.body.contains(btn)) btn.disabled=false;}
+});
+document.addEventListener("input",e=>{
+  if(e.target.id==="q"){UI.q=e.target.value;const pos=e.target.selectionStart;render();const q=document.getElementById("q");q.focus();q.setSelectionRange(pos,pos);}
+});
+document.addEventListener("visibilitychange",async()=>{if(!document.hidden&&P){await refreshShared();if(UI.league) await loadLeague(UI.league);render(true);}});
+boot().catch(()=>{render();hideSplash();});
+/* paillettes de fond */
+(function(){const cv=document.getElementById("glitter");if(!cv)return;const g=cv.getContext("2d");const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;const P=[];
+  for(let i=0;i<45;i++)P.push({x:Math.random(),y:Math.random(),r:.6+Math.random()*1.6,v:.00008+Math.random()*.0002,ph:Math.random()*6.28,sp:.6+Math.random()*2,star:Math.random()<.2});
+  function draw(t){const dpr=Math.min(2,devicePixelRatio||1),W=Math.round(innerWidth*dpr),H=Math.round(innerHeight*dpr);if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}
+    g.clearRect(0,0,W,H);
+    for(const q of P){if(!reduce){q.y+=q.v;if(q.y>1.02){q.y=-.02;q.x=Math.random();}}
+      const a=Math.max(0,Math.sin(t/1000*q.sp+q.ph));const x=q.x*W,y=q.y*H,rr=q.r*dpr;
+      g.globalAlpha=a*.75;g.fillStyle=a>.8?"#FFF6D8":"#F2CF7E";
+      if(q.star&&a>.55){const L=rr*4*a;g.beginPath();g.moveTo(x-L,y);g.lineTo(x+L,y);g.moveTo(x,y-L);g.lineTo(x,y+L);g.strokeStyle=g.fillStyle;g.lineWidth=.8*dpr;g.stroke();}
+      g.beginPath();g.arc(x,y,rr,0,6.283);g.fill();}
+    g.globalAlpha=1;if(!document.hidden)requestAnimationFrame(draw);else setTimeout(()=>requestAnimationFrame(draw),500);}
+  requestAnimationFrame(draw);})();
+</script>
+</body>
+</html>
