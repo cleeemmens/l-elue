@@ -169,7 +169,7 @@ h3{font:italic 700 21px/1.3 "Bodoni Moda",serif;margin:16px 0 8px;display:flex;a
 .lb .tot{margin-left:auto;font:500 24px "Bodoni Moda",serif;color:var(--or)}
 .det{font-size:12.5px;color:var(--brume)}
 .pill{display:inline-block;font-size:11.5px;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.07);color:var(--brume);font-weight:400}
-.pill.ok{background:rgba(159,227,191,.14);color:var(--ok)} .pill.gold{background:rgba(233,191,98,.14);color:var(--or)}
+.pill.ok{background:rgba(159,227,191,.14);color:var(--ok)} .pill.danger{background:rgba(255,120,120,.14);color:#ff9d9d} .pill.gold{background:rgba(233,191,98,.14);color:var(--or)}
 .empty{text-align:center;color:var(--brume);padding:30px 10px}
 .note{font-size:14px;color:#E9DCEB;background:rgba(233,191,98,.07);border:1px solid rgba(233,191,98,.25);padding:12px 14px;border-radius:14px;margin:10px 0}
 .lock{font-size:14px;background:rgba(255,154,154,.08);border:1px solid rgba(255,154,154,.3);color:#FFD6D6;padding:12px 14px;border-radius:14px;margin:10px 0}
@@ -266,7 +266,7 @@ const MANCHES = {1:{name:"Le top 15",k:15,short:"Top 15"},2:{name:"Le top 5",k:5
 const ORDER_LABELS = ["Miss France","1re dauphine","2e dauphine","3e dauphine","4e dauphine"];
 const ERRORS = {NAME_TAKEN:"Ce prénom est déjà pris dans ce groupe : change ton prénom dans ton profil (ex : Léa B.) puis réessaie.",
   BAD_CODE:"Ce code n'existe pas. Vérifie-le !", VOTES_LOCKED:"Cette manche est fermée", NOT_ADMIN:"Mot de passe incorrect",
-  NO_PROFILE:"Profil introuvable, recharge la page."};
+  NO_PROFILE:"Profil introuvable, recharge la page.", NOT_MEMBER:"Tu ne fais plus partie de ce groupe.", BAD_TOKEN:"Recharge la page et réessaie."};
 const ICONS = {
   jouer:'<svg viewBox="0 0 24 24"><path d="M5 18h14M6 18l-2-10 5 4 3-6 3 6 5-4-2 10"/></svg>',
   noter:'<svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6 .6-4.5 4 1.3 6-5.4-3.2-5.4 3.2 1.3-6-4.5-4 6-.6z"/></svg>',
@@ -412,38 +412,48 @@ function persoResult(ans){
 
 /* ===================== ACCÈS À LA BASE ===================== */
 function makeApi(){
-  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  const ok = ({data,error})=>{ if(error) throw error; return data; };
-  let uid=null;
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+  const rpc = async (f,a)=>{ const {data,error}=await sb.rpc(f,a); if(error) throw error; return data; };
+  // Pas de compte : chaque téléphone garde une clé secrète, la base n'en garde qu'une empreinte
+  const TK="lelue-tok", tok=()=>ls.get(TK);
+  const key=()=>{ if(!tok()){ const a=new Uint8Array(32); crypto.getRandomValues(a); ls.set(TK,[...a].map(b=>b.toString(16).padStart(2,"0")).join("")); } return tok(); };
+  let src="db";
   return {
-    async session(){ const {data}=await sb.auth.getSession(); uid=data.session?.user?.id||null; return uid; },
-    async signIn(){ const d=ok(await sb.auth.signInAnonymously()); uid=d.user.id; return uid; },
-    async myProfile(){ const d=ok(await sb.rpc("my_profile")); return d&&d.id?d:null; },
-    async createProfile(name,emoji){ ok(await sb.from("profiles").insert({name,emoji})); return this.myProfile(); },
-    async saveProfile(id,patch){ ok(await sb.from("profiles").update(patch).eq("id",id)); },
-    async recoveryCode(){ return ok(await sb.rpc("my_recovery_code")); },
-    async recover(code){ return ok(await sb.rpc("recover_profile",{p_code:code})); },
-    async createLeague(name,crits){ return ok(await sb.rpc("create_league",{p_name:name,p_crits:crits})); },
-    async setLeagueCrits(id,crits){ return ok(await sb.rpc("set_league_crits",{p_league:id,p_crits:crits})); },
-    async joinLeague(code){ return ok(await sb.rpc("join_league",{p_code:code})); },
-    async leaveLeague(leagueId){ return ok(await sb.rpc("leave_league",{p_league:leagueId})); },
-    async myLeagues(){ return ok(await sb.rpc("my_leagues"))||[]; },
-    async leagueProfiles(id){ return ok(await sb.rpc("league_profiles",{p_league:id}))||[]; },
-    async stats(){ return ok(await sb.rpc("france_stats")); },
-    async franceRound(n){ return ok(await sb.rpc("france_round",{n})); },
-    async results(){ return ok(await sb.from("results").select("*").eq("id",1).single()); },
-    onResults(cb){ sb.channel("results").on("postgres_changes",{event:"*",schema:"public",table:"results"},p=>cb(p.new)).subscribe(); },
-    async adminCheck(pwd){ return ok(await sb.rpc("admin_check",{p_pwd:pwd})); },
-    async adminSetResults(pwd,r){ return ok(await sb.rpc("admin_set_results",{p_pwd:pwd,p_top15:r.top15,p_top5:r.top5,p_ord:r.ord})); },
-    async adminSetState(pwd,s){ return ok(await sb.rpc("admin_set_state",{p_pwd:pwd,p_manche:s.manche,p_locked:s.locked,p_show_at:s.show_at,p_close_at:s.close_at})); },
-    async adminFranceRound(pwd,n){ return ok(await sb.rpc("admin_france_round",{p_pwd:pwd,n})); },
-    async adminReset(pwd){ return ok(await sb.rpc("admin_reset_night",{p_pwd:pwd})); }
+    get stateSource(){ return src; },
+    async myProfile(){ if(!tok()) return null; try{ return await rpc("my_profile",{p_tok:tok()}); }catch(e){ if(String(e.message).includes("NO_PROFILE")) return null; throw e; } },
+    createProfile:(name,emoji)=>rpc("create_profile",{p_tok:key(),p_name:name,p_emoji:emoji}),
+    saveProfile:(id,patch)=>rpc("save_profile",{p_tok:tok(),p:patch}),
+    recoveryCode:()=>rpc("my_recovery_code",{p_tok:tok()}),
+    recover:(code)=>rpc("recover_profile",{p_tok:key(),p_code:code}),
+    createLeague:(name,crits)=>rpc("create_league",{p_tok:tok(),p_name:name,p_crits:crits}),
+    setLeagueCrits:(id,crits)=>rpc("set_league_crits",{p_tok:tok(),p_league:id,p_crits:crits}),
+    joinLeague:(code)=>rpc("join_league",{p_tok:tok(),p_code:code}),
+    leaveLeague:(id)=>rpc("leave_league",{p_tok:tok(),p_league:id}),
+    myLeagues:async()=>(await rpc("my_leagues",{p_tok:tok()}))||[],
+    leagueProfiles:async(id)=>(await rpc("league_profiles",{p_tok:tok(),p_league:id}))||[],
+    stats:()=>rpc("france_stats"),
+    // L'état de la soirée : d'abord le petit fichier publié (gratuit, illimité), sinon la base
+    async state(){
+      try{ const r=await fetch("/state.json",{cache:"no-cache"}); if(r.ok){ const j=await r.json(); if(j&&j.manche){ src="file"; return j; } } }catch(e){}
+      src="db"; return rpc("public_state");
+    },
+    adminState:()=>rpc("public_state"),
+    adminCheck:(pwd)=>rpc("admin_check",{p_pwd:pwd}),
+    adminSetResults:(pwd,r)=>rpc("admin_set_results",{p_pwd:pwd,p_top15:r.top15,p_top5:r.top5,p_ord:r.ord}),
+    adminSetState:(pwd,s)=>rpc("admin_set_state",{p_pwd:pwd,p_manche:s.manche,p_locked:s.locked,p_show_at:s.show_at,p_close_at:s.close_at}),
+    adminReset:(pwd)=>rpc("admin_reset_night",{p_pwd:pwd}),
+    // Classement de la France calculé par paquets ; publish=true le révèle à tout le monde
+    async adminFrance(pwd,n,publish){
+      let r=await rpc("admin_fr_step",{p_pwd:pwd,n,p_restart:true});
+      while(!r.done) r=await rpc("admin_fr_step",{p_pwd:pwd,n,p_restart:false});
+      return rpc("admin_fr_finish",{p_pwd:pwd,n,p_publish:publish});
+    }
   };
 }
 const API = window.MOCK_API || makeApi();
 
 /* ===================== ÉTAT ===================== */
-let P=null, R={manche:1,votes_locked:false,show_at:"2026-12-12T21:10:00+01:00",close_at:null,top15:[],top5:[],ord:[null,null,null,null,null]};
+let P=null, R={manche:1,votes_locked:false,show_at:"2026-12-12T21:10:00+01:00",close_at:null,top15:[],top5:[],ord:[null,null,null,null,null],fr:{}};
 let FR={}, STATS=null, LEAGUES=[];
 const LP={};
 const UI={tab:"jouer",open:null,filter:"all",q:"",league:null,welcome:"new",emoji:"👑",admin:false,adminPwd:"",syncing:false,adminFR:{},adminPick:null};
@@ -493,11 +503,11 @@ const isOpen=()=>R.manche<=3&&!R.votes_locked;
 
 /* ===================== SAUVEGARDE ===================== */
 let pend={},timer=null;
-function patch(obj){Object.assign(P,obj);Object.assign(pend,obj);UI.syncing=true;paintSync();clearTimeout(timer);timer=setTimeout(flush,700);}
+function patch(obj){Object.assign(P,obj);Object.assign(pend,obj);UI.syncing=true;paintSync();clearTimeout(timer);timer=setTimeout(flush,1200);}
 async function flush(){
   const body=pend;pend={};if(!Object.keys(body).length){UI.syncing=false;paintSync();return;}
   try{await API.saveProfile(P.id,body);}
-  catch(e){toast(errMsg(e),true);try{P=await API.myProfile();await refreshShared();}catch(_){} render();}
+  catch(e){toast(errMsg(e),true);try{P=await API.myProfile()||P;await refreshState();}catch(_){} render();}
   UI.syncing=Object.keys(pend).length>0;paintSync();
 }
 function paintSync(){const s=document.getElementById("sync");if(s) s.textContent=UI.syncing?"…":"✓";}
@@ -505,30 +515,41 @@ window.addEventListener("pagehide",()=>{if(Object.keys(pend).length) flush();});
 function saveRound(n,order){const r={...(P.rounds||{})};r[n]=order;patch({rounds:r});}
 
 /* ===================== CHARGEMENT ===================== */
-async function refreshShared(){
-  try{R=await API.results();}catch(e){}
-  try{STATS=await API.stats();}catch(e){}
-  for(const n of [1,2,3]){ if(n<=R.manche){ try{FR[n]=await API.franceRound(n);}catch(e){} } else delete FR[n]; }
-}
+let lastState=0, lastStats=0, lastLeague=0;
+function applyState(st){ if(!st) return; R={...R,...st,fr:st.fr||{}}; FR={}; [1,2,3].forEach(n=>{ FR[n]=R.fr[n]?{...R.fr[n],hidden:false}:{hidden:true}; }); }
+async function refreshState(){ try{ applyState(UI.admin?await API.adminState():await API.state()); lastState=Date.now(); }catch(e){} }
+async function refreshStats(){ try{ STATS=await API.stats(); lastStats=Date.now(); }catch(e){} }
+async function refreshShared(){ await refreshState(); await refreshStats(); }
 async function refreshLeagues(){
   try{LEAGUES=await API.myLeagues();}catch(e){LEAGUES=[];}
   if(UI.league&&!LEAGUES.find(l=>l.id===UI.league)) UI.league=null;
   if(!UI.league&&LEAGUES.length){const s=ls.get("cp-league");UI.league=s&&LEAGUES.find(l=>l.id===s)?s:LEAGUES[0].id;}
   if(UI.league) await loadLeague(UI.league);
 }
-async function loadLeague(id){try{LP[id]=await API.leagueProfiles(id);}catch(e){}}
+async function loadLeague(id){try{LP[id]=await API.leagueProfiles(id);lastLeague=Date.now();}catch(e){}}
 function hideSplash(){const sp=document.getElementById("splash");if(!sp)return;const wait=Math.max(0,1400-(Date.now()-T0));setTimeout(()=>{sp.classList.add("out");setTimeout(()=>sp.remove(),700);},wait);}
 const T0=Date.now();
 async function boot(){
   readHash();
   if(UI.admin&&ls.get("lelue-admin")){try{if(await API.adminCheck(ls.get("lelue-admin"))) UI.adminPwd=ls.get("lelue-admin");}catch(e){}}
-  try{const uid=await API.session(); if(uid) P=await API.myProfile();}catch(e){}
+  try{P=await API.myProfile();}catch(e){}
   await refreshShared();
   if(P){await refreshLeagues(); if(pendingJoin) await doJoin(pendingJoin);}
   render(); hideSplash();
-  try{API.onResults(async r=>{const changed=r.manche!==R.manche||r.votes_locked!==R.votes_locked;R={...R,...r};if(changed){await refreshShared();if(P)P=await API.myProfile()||P;}render(true);});}catch(e){}
   setInterval(tick,1000);
-  setInterval(async()=>{ if(document.hidden) return; await refreshShared(); if(P&&UI.league&&UI.tab==="groupes") await loadLeague(UI.league); render(true);},45000);
+  setTimeout(poll,pollDelay());
+}
+/* Le fichier publié est gratuit : on le relit souvent. La base, rarement. */
+const pollDelay=()=>(UI.admin?20000:API.stateSource==="file"?30000:90000)+Math.random()*10000;
+async function poll(){
+  try{
+    if(!document.hidden){
+      const v0=R.v; await refreshState(); const changed=R.v!==v0;
+      if(!UI.admin&&Date.now()-lastStats>300000) await refreshStats();
+      if(P&&UI.league&&(changed||(UI.tab==="groupes"&&Date.now()-lastLeague>180000))){ if(changed&&!UI.admin) await new Promise(r=>setTimeout(r,Math.random()*15000)); await loadLeague(UI.league); }
+      render(true);
+    }
+  }finally{ setTimeout(poll,pollDelay()); }
 }
 function readHash(){
   const h=decodeURIComponent(location.hash.slice(1));
@@ -900,6 +921,7 @@ function vAdmin(){
   return `<header><div class="brand"><img src="/icons/diademe.webp" alt=""><div class="logo shine">L'Élue</div></div><span class="pill gold" style="margin-left:auto">Admin</span><button class="btn sm ghost" data-a="alogout">Déconnexion</button></header>
   <div class="box">${vCountdown()}</div>${vSteps()}
   <div class="box"><h3>${R.manche>3?"Soirée terminée":`Manche ${n} · ${MANCHES[n].name} · ${locked?"fermée":"ouverte"}`}</h3>${action}</div>
+  ${vPublish()}
   <div class="box"><h3>Horaires du compte à rebours</h3>
     <div class="det">Début de l'émission</div><input class="field" type="datetime-local" id="ashow" value="${toLocal(R.show_at)}">
     <div class="det" style="margin-top:10px">Fermeture prévue de la manche en cours (facultatif)</div><input class="field" type="datetime-local" id="aclose" value="${toLocal(R.close_at)}">
@@ -1009,7 +1031,40 @@ async function doJoin(code){
   try{const l=await API.joinLeague(code);toast(`Bienvenue dans « ${l.name} »`);UI.league=l.id;ls.set("cp-league",l.id);UI.tab="groupes";await refreshLeagues();}
   catch(e){toast(errMsg(e),true);}
 }
-async function adminDo(fn){try{await fn();await refreshShared();UI.adminFR={};render();}catch(err){toast(errMsg(err),true);}}
+async function adminDo(fn){try{UI.abusy=true;render();await fn();await refreshShared();UI.adminFR={};UI.abusy=false;render();publishState();}catch(err){UI.abusy=false;toast(errMsg(err),true);render();}}
+/* Publication de l'état de la soirée dans le fichier state.json (servi gratuitement à tout le monde) */
+const GH_URL="https://api.github.com/repos/cleeemmens/l-elue/contents/state.json";
+let pubChain=Promise.resolve();
+function publishState(){ pubChain=pubChain.then(doPublish,doPublish); return pubChain; }
+async function doPublish(){
+  const gh=ls.get("lelue-gh"); if(!gh){UI.pub="off";render();return;}
+  UI.pub="busy"; render();
+  try{
+    const st=await API.adminState(); applyState(st);
+    const H={Authorization:"Bearer "+gh,Accept:"application/vnd.github+json"};
+    const content=btoa(unescape(encodeURIComponent(JSON.stringify(st))));
+    for(let tries=0;;tries++){
+      let sha; const g=await fetch(GH_URL+"?ref=main",{headers:H,cache:"no-store"});
+      if(g.ok) sha=(await g.json()).sha; else if(g.status!==404) throw new Error(g.status===401?"clé GitHub refusée ou expirée":"GitHub "+g.status);
+      const p=await fetch(GH_URL,{method:"PUT",headers:{...H,"Content-Type":"application/json"},body:JSON.stringify({message:`Soirée : manche ${st.manche}${st.votes_locked?" fermée":" ouverte"}`,content,sha,branch:"main"})});
+      if(p.ok) break;
+      if((p.status===409||p.status===422)&&tries<2) continue;
+      throw new Error(p.status===401||p.status===403?"clé GitHub refusée ou expirée":"GitHub "+p.status);
+    }
+    UI.pub="ok"; UI.pubAt=Date.now(); UI.pubErr="";
+  }catch(e){ UI.pub="err"; UI.pubErr=e.message||String(e); }
+  render();
+}
+function vPublish(){
+  const gh=ls.get("lelue-gh"), t=UI.pubAt?new Date(UI.pubAt).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}):"";
+  if(!gh) return `<div class="box"><h3>Publication pour tout le monde <span class="pill">pas encore configurée</span></h3>
+    <div class="det">Tant que ce n'est pas fait, les joueuses lisent l'état de la soirée directement dans la base : ça marche, mais ça consomme ton quota gratuit Supabase. Une fois configurée, chaque action admin publie un petit fichier servi gratuitement par Cloudflare, sans limite de monde.</div>
+    <form id="fgh" class="row" style="margin-top:10px"><input class="field grow" id="ghkey" placeholder="Colle ta clé GitHub (github_pat_…)" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"><button class="btn sm gold">Enregistrer</button></form></div>`;
+  const st=UI.pub==="busy"?`<span class="pill">publication…</span>`:UI.pub==="err"?`<span class="pill danger">échec</span>`:UI.pub==="ok"?`<span class="pill ok">publié à ${t}</span>`:`<span class="pill ok">prête</span>`;
+  return `<div class="box"><h3>Publication pour tout le monde ${st}</h3>
+    <div class="det">${UI.pub==="err"?`Pas publié : ${esc(UI.pubErr)}. Les joueuses voient encore l'ancienne version. Réessaie ; si la clé a expiré, retire-la et colles-en une nouvelle.`:UI.pub==="ok"?"Visible par tout le monde dans environ 1 minute (le temps que Cloudflare mette le site à jour).":"Chaque action ci-dessus est publiée automatiquement."}</div>
+    <div class="row" style="margin-top:10px"><button class="btn sm${UI.pub==="err"?" gold":""}" data-a="apub">${UI.pub==="err"?"Réessayer":"Republier maintenant"}</button><button class="btn sm ghost" data-a="aghoff">Retirer la clé</button></div></div>`;
+}
 
 document.addEventListener("click",async e=>{
   const b=e.target.closest("[data-a]"); if(!b||b.disabled) return;
@@ -1018,7 +1073,7 @@ document.addEventListener("click",async e=>{
     case "closemodal": if(e.target===b||b.tagName==="BUTTON") closeModal(); return;
     case "welcome": UI.welcome=v; break;
     case "wemoji": UI.emoji=v; document.querySelectorAll("[data-a=wemoji]").forEach(x=>x.classList.toggle("on",x.dataset.v===v)); return;
-    case "tab": if(v==="profil"&&UI.tab!=="profil") UI.prevTab=UI.tab; UI.tab=v; window.scrollTo(0,0); if(v==="resultats"||v==="jouer") refreshShared().then(()=>render(true)); if(v==="groupes"&&UI.league) loadLeague(UI.league).then(()=>render(true)); break;
+    case "tab": if(v==="profil"&&UI.tab!=="profil") UI.prevTab=UI.tab; UI.tab=v; window.scrollTo(0,0); if((v==="resultats"||v==="jouer")&&Date.now()-lastState>20000) refreshState().then(()=>render(true)); if(v==="groupes"&&UI.league&&Date.now()-lastLeague>60000) loadLeague(UI.league).then(()=>render(true)); break;
     case "filter": UI.filter=v; break;
     case "open": UI.open=UI.open===v?null:v; break;
     case "note": { const notes=JSON.parse(JSON.stringify(P.notes||{})); const n=notes[b.dataset.c]||(notes[b.dataset.c]={}); const val=+v;
@@ -1058,13 +1113,13 @@ document.addEventListener("click",async e=>{
     case "share": { const l=LEAGUES.find(x=>x.id===v); const url=location.origin+location.pathname+"#rejoindre-"+l.code;
       const t=`Rejoins mon groupe « ${l.name} » sur L'Élue 👑\nOn note les candidates et on fait nos pronos avant l'élection !\nCode : ${l.code}\n${url}`;
       if(navigator.share){try{await navigator.share({text:t});return;}catch(err){}} copyText(t); return; }
-    case "leave": confirmBox("Quitter ce groupe ? Tes notes et ton classement sont conservés.",async()=>{try{await API.leaveLeague(v,P.id);UI.league=null;await refreshLeagues();render();}catch(err){toast(errMsg(err),true);}}); return;
+    case "leave": confirmBox("Quitter ce groupe ? Tes notes et ton classement sont conservés.",async()=>{try{await API.leaveLeague(v);UI.league=null;await refreshLeagues();render();}catch(err){toast(errMsg(err),true);}}); return;
     case "emoji": patch({emoji:v}); break;
     case "mode": patch({mode:v}); break;
     case "crit": { const c=new Set(P.crits||[]); c.has(v)?c.delete(v):c.add(v); patch({crits:[...c]}); break; }
     case "showcode": try{UI.rcode=await API.recoveryCode();}catch(err){toast(errMsg(err),true);} break;
     /* admin */
-    case "alock": confirmBox(`Fermer la manche ${R.manche} ? Plus personne ne pourra modifier son classement, et le classement de la France sera révélé.`,()=>adminDo(()=>API.adminSetState(UI.adminPwd,{manche:R.manche,locked:true,show_at:R.show_at,close_at:null}))); return;
+    case "alock": { const n=R.manche; confirmBox(`Fermer la manche ${n} ? Plus personne ne pourra modifier son classement, et le classement de la France sera révélé.`,()=>adminDo(async()=>{await API.adminSetState(UI.adminPwd,{manche:n,locked:true,show_at:R.show_at,close_at:null}); await API.adminFrance(UI.adminPwd,n,true);})); return; }
     case "aunlock": UI.adminPick=null; adminDo(()=>API.adminSetState(UI.adminPwd,{manche:R.manche,locked:false,show_at:R.show_at,close_at:R.close_at})); return;
     case "apick": { const pk=UI.adminPick, l=+b.dataset.l;
       if(l===15){pk.top15=pk.top15.includes(v)?pk.top15.filter(x=>x!==v):pk.top15.length<15?[...pk.top15,v]:pk.top15;}
@@ -1074,15 +1129,17 @@ document.addEventListener("click",async e=>{
     case "anext": { const pk=UI.adminPick, n=R.manche;
       const res=n===1?{top15:pk.top15,top5:[],ord:[null,null,null,null,null]}:n===2?{top15:R.top15,top5:pk.top5,ord:[null,null,null,null,null]}:{top15:R.top15,top5:R.top5,ord:pk.ord};
       const txt=n===1?"Valider ce top 15 et ouvrir la manche 2 ?":n===2?"Valider ce top 5 et ouvrir la manche 3 ?":"Valider le résultat final ? Les points seront calculés pour tout le monde.";
-      confirmBox(txt,()=>adminDo(async()=>{await API.adminSetResults(UI.adminPwd,res); await API.adminSetState(UI.adminPwd,{manche:n+1,locked:n===3,show_at:R.show_at,close_at:null}); UI.adminPick=null;})); return; }
+      confirmBox(txt,()=>adminDo(async()=>{if(!R.fr[n]) await API.adminFrance(UI.adminPwd,n,true); await API.adminSetResults(UI.adminPwd,res); await API.adminSetState(UI.adminPwd,{manche:n+1,locked:n===3,show_at:R.show_at,close_at:null}); UI.adminPick=null;})); return; }
     case "alogout": UI.adminPwd=""; ls.set("lelue-admin",""); break;
     case "atimes": { const s=document.getElementById("ashow").value, c=document.getElementById("aclose").value;
       adminDo(()=>API.adminSetState(UI.adminPwd,{manche:R.manche,locked:R.votes_locked,show_at:s?new Date(s).toISOString():R.show_at,close_at:c?new Date(c).toISOString():null})); toast("Horaires enregistrés"); return; }
-    case "afr": try{UI.adminFR[v]=await API.adminFranceRound(UI.adminPwd,+v);}catch(err){toast(errMsg(err),true);} break;
+    case "afr": try{UI.adminFR[v]=R.fr[v]||await API.adminFrance(UI.adminPwd,+v,false);}catch(err){toast(errMsg(err),true);} break;
+    case "apub": publishState(); return;
+    case "aghoff": confirmBox("Retirer la clé GitHub de ce téléphone ? Les actions admin ne seront plus publiées dans le fichier.",()=>{ls.set("lelue-gh","");UI.pub="off";render();}); return;
     case "arefresh": await refreshShared(); UI.adminFR={}; toast("À jour"); break;
     case "areset": confirmBox("Réinitialiser la soirée ? Retour à la manche 1, résultats officiels effacés, manches 2 et 3 effacées pour tout le monde.",()=>adminDo(async()=>{await API.adminReset(UI.adminPwd);UI.adminPick=null;})); return;
     case "acopy": { const lines=[`L'Élue · ${STATS?.players||0} joueuses`];
-      for(const k of [1,2,3]){ if(k>R.manche) break; let f=UI.adminFR[k]; if(!f){try{f=UI.adminFR[k]=await API.adminFranceRound(UI.adminPwd,k);}catch(err){}} if(f&&f.order.length) lines.push(`\nManche ${k} · le choix de la France :\n`+filterTo(f.order,pool(k)).slice(0,MANCHES[k].k).map((id,i)=>`${i+1}. Miss ${BY[id].region}`).join("\n")); }
+      for(const k of [1,2,3]){ if(k>R.manche) break; let f=UI.adminFR[k]||R.fr[k]; if(!f){try{f=UI.adminFR[k]=await API.adminFrance(UI.adminPwd,k,false);}catch(err){}} if(f&&f.order.length) lines.push(`\nManche ${k} · le choix de la France :\n`+filterTo(f.order,pool(k)).slice(0,MANCHES[k].k).map((id,i)=>`${i+1}. Miss ${BY[id].region}`).join("\n")); }
       copyText(lines.join("\n")+"\n#LElue #MissFrance2027"); render(); return; }
   }
   render();
@@ -1091,23 +1148,24 @@ document.addEventListener("submit",async e=>{
   e.preventDefault(); const id=e.target.id, btn=e.target.querySelector("button:not([type=button])"); if(btn) btn.disabled=true;
   try{
     if(id==="fwelcome"){ const name=document.getElementById("wname").value.trim(); if(!name){toast("Choisis un prénom");return;}
-      if(!await API.session()) await API.signIn(); P=await API.myProfile()||await API.createProfile(name,UI.emoji);
+      P=await API.createProfile(name,UI.emoji);
       await refreshLeagues(); if(pendingJoin) await doJoin(pendingJoin); toast(`Bienvenue ${P.name} ${P.emoji}`); render(); }
     if(id==="frecover"){ const code=document.getElementById("rcode").value.trim(); if(!code) return;
-      if(!await API.session()) await API.signIn(); await API.recover(code); P=await API.myProfile(); await refreshLeagues(); toast(`Re-bonjour ${P.name} ${P.emoji}`); render(); }
+      P=await API.recover(code); await refreshLeagues(); toast(`Re-bonjour ${P.name} ${P.emoji}`); render(); }
     if(id==="fcreate"){ const cr=UI.newCrits||ALLC; if(!cr.length){toast("Choisis au moins un critère");return;} const l=await API.createLeague(document.getElementById("lname").value.trim(),cr); UI.newCrits=null; UI.league=l.id; ls.set("cp-league",l.id); await refreshLeagues(); render(); toast(`Groupe créé : ${l.code}`); }
     if(id==="fjoin"){ const code=document.getElementById("jcode").value.trim(); if(code){await doJoin(code); render();} }
     if(id==="fname"){ const name=document.getElementById("pname").value.trim(); if(name){patch({name}); toast("Prénom modifié"); render();} }
     if(id==="fmove"){ const v=document.getElementById("mid").value, n=R.manche, order=roundOf(P,n).filter(x=>x!==v);
       let pos=Math.max(1,Math.min(order.length+1,parseInt(document.getElementById("mpos").value)||1)); order.splice(pos-1,0,v); saveRound(n,order); closeModal(); render(); }
     if(id==="fadmin"){ const raw=document.getElementById("apwd").value, pwd=raw.trim(); if(await API.adminCheck(pwd)||(raw!==pwd&&await API.adminCheck(raw))){UI.adminPwd=pwd;ls.set("lelue-admin",pwd); await refreshShared(); render();} else toast(ERRORS.NOT_ADMIN,true); }
+    if(id==="fgh"){ const k=document.getElementById("ghkey").value.trim(); if(!/^(github_pat_|ghp_)/.test(k)){toast("Ça ne ressemble pas à une clé GitHub (elle commence par github_pat_)",true);return;} ls.set("lelue-gh",k); await publishState(); if(UI.pub==="ok") toast("Clé enregistrée, état publié"); }
   }catch(err){toast(errMsg(err),true);}
   finally{if(btn&&document.body.contains(btn)) btn.disabled=false;}
 });
 document.addEventListener("input",e=>{
   if(e.target.id==="q"){UI.q=e.target.value;const pos=e.target.selectionStart;render();const q=document.getElementById("q");q.focus();q.setSelectionRange(pos,pos);}
 });
-document.addEventListener("visibilitychange",async()=>{if(!document.hidden&&P){await refreshShared();if(UI.league) await loadLeague(UI.league);render(true);}});
+document.addEventListener("visibilitychange",async()=>{if(document.hidden) return; if(Date.now()-lastState>20000) await refreshState(); if(P&&UI.league&&Date.now()-lastLeague>60000) await loadLeague(UI.league); render(true);});
 boot().catch(()=>{render();hideSplash();});
 /* paillettes de fond */
 (function(){const cv=document.getElementById("glitter");if(!cv)return;const g=cv.getContext("2d");const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;const P=[];
