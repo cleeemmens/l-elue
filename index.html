@@ -417,7 +417,7 @@ function makeApi(){
   // Pas de compte : chaque téléphone garde une clé secrète, la base n'en garde qu'une empreinte
   const TK="lelue-tok", tok=()=>ls.get(TK);
   const key=()=>{ if(!tok()){ const a=new Uint8Array(32); crypto.getRandomValues(a); ls.set(TK,[...a].map(b=>b.toString(16).padStart(2,"0")).join("")); } return tok(); };
-  let src="db";
+  let src="db", dbV=0, first=true;
   return {
     get stateSource(){ return src; },
     async myProfile(){ if(!tok()) return null; try{ return await rpc("my_profile",{p_tok:tok()}); }catch(e){ if(String(e.message).includes("NO_PROFILE")) return null; throw e; } },
@@ -433,10 +433,14 @@ function makeApi(){
     leagueProfiles:async(id)=>(await rpc("league_profiles",{p_tok:tok(),p_league:id}))||[],
     stats:()=>rpc("france_stats"),
     // L'état de la soirée : d'abord le petit fichier publié (gratuit, illimité), sinon la base
+    // Au chargement on lit la base une fois ; ensuite le fichier, sauf s'il est plus ancien que la base
     async state(){
-      try{ const r=await fetch("/state.json",{cache:"no-cache"}); if(r.ok){ const j=await r.json(); if(j&&j.manche){ src="file"; return j; } } }catch(e){}
-      src="db"; return rpc("public_state");
+      if(first){ try{ const s=await rpc("public_state"); first=false; dbV=s.v||0; src="db"; return s; }catch(e){} }
+      try{ const r=await fetch("/state.json",{cache:"no-cache"}); if(r.ok){ const j=await r.json(); if(j&&j.manche&&(j.v||0)>=dbV){ src="file"; dbV=j.v||dbV; return j; } } }catch(e){}
+      return this.freshState();
     },
+    async freshState(){ const s=await rpc("public_state"); dbV=Math.max(dbV,s.v||0); src="db"; return s; },
+    async fileV(){ try{ const r=await fetch("/state.json",{cache:"no-store"}); if(r.ok){ const j=await r.json(); return j.v||0; } }catch(e){} return 0; },
     adminState:()=>rpc("public_state"),
     adminCheck:(pwd)=>rpc("admin_check",{p_pwd:pwd}),
     adminSetResults:(pwd,r)=>rpc("admin_set_results",{p_pwd:pwd,p_top15:r.top15,p_top5:r.top5,p_ord:r.ord}),
@@ -507,7 +511,7 @@ function patch(obj){Object.assign(P,obj);Object.assign(pend,obj);UI.syncing=true
 async function flush(){
   const body=pend;pend={};if(!Object.keys(body).length){UI.syncing=false;paintSync();return;}
   try{await API.saveProfile(P.id,body);}
-  catch(e){toast(errMsg(e),true);try{P=await API.myProfile()||P;await refreshState();}catch(_){} render();}
+  catch(e){toast(errMsg(e),true);try{P=await API.myProfile()||P;applyState(await API.freshState());}catch(_){} render();}
   UI.syncing=Object.keys(pend).length>0;paintSync();
 }
 function paintSync(){const s=document.getElementById("sync");if(s) s.textContent=UI.syncing?"…":"✓";}
@@ -545,6 +549,8 @@ async function poll(){
   try{
     if(!document.hidden){
       const v0=R.v; await refreshState(); const changed=R.v!==v0;
+      // Page admin : si le fichier public est en retard sur la base, on le republie (au plus toutes les 3 min)
+      if(UI.admin&&UI.adminPwd&&ls.get("lelue-gh")&&UI.pub!=="busy"&&Date.now()-(UI.pubAt||0)>180000&&await API.fileV()!==R.v) publishState();
       if(!UI.admin&&Date.now()-lastStats>300000) await refreshStats();
       if(P&&UI.league&&(changed||(UI.tab==="groupes"&&Date.now()-lastLeague>180000))){ if(changed&&!UI.admin) await new Promise(r=>setTimeout(r,Math.random()*15000)); await loadLeague(UI.league); }
       render(true);
@@ -919,9 +925,10 @@ function vAdmin(){
   const frs=[1,2,3].filter(k=>k<=n).map(k=>{const f=UI.adminFR[k];const kk=MANCHES[k].k;return `<div class="box"><h3>Manche ${k} · classement de la France ${FR[k]&&!FR[k].hidden?`<span class="pill ok">révélé</span>`:`<span class="pill">caché aux joueuses</span>`}</h3>
     ${f?(f.order.length?filterTo(f.order,pool(k)).slice(0,kk).map((id,i)=>`<div class="rk p${i+1}"><div class="pos">${i+1}</div><div class="grow"><b>Miss ${BY[id].region}</b></div></div>`).join("")+`<div class="det" style="margin-top:6px">${f.voters} classement${f.voters>1?"s":""}</div>`:`<div class="det">Aucun classement pour l'instant.</div>`):`<button class="btn sm" data-a="afr" data-v="${k}">Voir (en avant-première)</button>`}</div>`;}).join("");
   return `<header><div class="brand"><img src="/icons/diademe.webp" alt=""><div class="logo shine">L'Élue</div></div><span class="pill gold" style="margin-left:auto">Admin</span><button class="btn sm ghost" data-a="alogout">Déconnexion</button></header>
+  ${!ls.get("lelue-gh")||UI.pub==="err"?vPublish():""}
   <div class="box">${vCountdown()}</div>${vSteps()}
   <div class="box"><h3>${R.manche>3?"Soirée terminée":`Manche ${n} · ${MANCHES[n].name} · ${locked?"fermée":"ouverte"}`}</h3>${action}</div>
-  ${vPublish()}
+  ${ls.get("lelue-gh")&&UI.pub!=="err"?vPublish():""}
   <div class="box"><h3>Horaires du compte à rebours</h3>
     <div class="det">Début de l'émission</div><input class="field" type="datetime-local" id="ashow" value="${toLocal(R.show_at)}">
     <div class="det" style="margin-top:10px">Fermeture prévue de la manche en cours (facultatif)</div><input class="field" type="datetime-local" id="aclose" value="${toLocal(R.close_at)}">
