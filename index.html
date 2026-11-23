@@ -240,7 +240,7 @@ details[open] summary::after{content:"–"}
 /* ===================== CONFIG ===================== */
 const SUPABASE_URL = "https://hjmreiccdcrrdnwmnnye.supabase.co";
 const SUPABASE_KEY = "sb_publishable_MAqip45XAF55N-By7v8kqw_DdcsjBvj";
-const SITE = "lelue-app.netlify.app";
+const SITE = (location.host && !/localhost|127\.0\.0\.1/.test(location.host)) ? location.host : "l-elue.lelue.workers.dev";
 
 /* ===================== DONNÉES ===================== */
 const CANDS = [
@@ -1117,7 +1117,7 @@ document.addEventListener("click",async e=>{
       setTimeout(()=>{const x=document.getElementById("mpos");x&&x.select();},50); return; }
     case "story": { showStory(await makeStory()); return; }
     case "league": UI.league=v; ls.set("cp-league",v); await loadLeague(v); break;
-    case "share": { const l=LEAGUES.find(x=>x.id===v); const url=location.origin+location.pathname+"#rejoindre-"+l.code;
+    case "share": { const l=LEAGUES.find(x=>x.id===v); const url=location.origin+"/#rejoindre-"+l.code;
       const t=`Rejoins mon groupe « ${l.name} » sur L'Élue 👑\nOn note les candidates et on fait nos pronos avant l'élection !\nCode : ${l.code}\n${url}`;
       if(navigator.share){try{await navigator.share({text:t});return;}catch(err){}} copyText(t); return; }
     case "leave": confirmBox("Quitter ce groupe ? Tes notes et ton classement sont conservés.",async()=>{try{await API.leaveLeague(v);UI.league=null;await refreshLeagues();render();}catch(err){toast(errMsg(err),true);}}); return;
